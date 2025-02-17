@@ -792,7 +792,7 @@ function prefillForm(data) {
     }
 
     // Determine the result based on the acreage value
-    return acreageValue > 0.5 ? "> .5 acre" : "< .5 acre";
+    return acreageValue > 0.333 ? "> 1/3 acre" : "< 1/3 acre";
   }
 
   // Function to check if a value is effectively zero
@@ -2238,7 +2238,7 @@ function homeDataValid(data) {
     updateEligibilityCheck("BATHS", "Failed");
     valid = false;
   }
-  if (data.acres == "> .5 acre" || parseInt(data.acres) > 0.5) {
+  if (data.acres == "> 1/3 acre" || parseInt(data.acres) > 0.333) {
     console.log("failed for acres");
     updateEligibilityCheck("ACRES", "Failed");
     valid = false;
