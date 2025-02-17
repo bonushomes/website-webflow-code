@@ -2243,7 +2243,7 @@ function homeDataValid(data) {
     updateEligibilityCheck("ACRES", "Failed");
     valid = false;
   }
-  if (data.square_footage < 1200 || data.square_footage > 3500) {
+  if (data.square_footage < 1200 || data.square_footage > 3200) {
     console.log("failed for sq ft");
     updateEligibilityCheck("SQUARE_FOOTAGE", "Failed");
     valid = false;
