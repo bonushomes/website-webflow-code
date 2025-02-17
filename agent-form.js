@@ -1454,7 +1454,7 @@ function validateAndBuildHomeProfile(propertyData) {
     // If square footage exists, ensure it is treated as a number
     const squareFootage = Number(rawSquareFootage);
     squareFootagePassed =
-      squareFootage >= 1200 && squareFootage <= 3500 ? "Passed" : "Failed";
+      squareFootage >= 1200 && squareFootage <= 3200 ? "Passed" : "Failed";
   }
 
   // Push the check, using an empty string if there's no square footage
