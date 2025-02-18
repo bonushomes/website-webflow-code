@@ -1424,8 +1424,8 @@ function validateAndBuildHomeProfile(propertyData) {
       eligibilityCheck: "Ignored", // or you could choose "Failed" if that fits your logic
     });
   } else {
-    const acreagePassed = acreageValue <= 0.5 ? "Passed" : "Failed";
-    const finalAcreageValue = acreageValue > 0.5 ? "> .5" : "< .5";
+    const acreagePassed = acreageValue <= 0.333 ? "Passed" : "Failed";
+    const finalAcreageValue = acreageValue > 0.333 ? "> 1/3 acre" : "< 1/3 acre";
     checks.push({
       id: "ACRES",
       value: finalAcreageValue,
