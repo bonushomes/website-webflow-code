@@ -1536,7 +1536,7 @@ function validateAndBuildHomeProfile(propertyData) {
       ? propertyData.mortgages[0]?.loanType || "Unknown"
       : "Unknown"; // Default to "Unknown"
   const loanTypePassed =
-    loanTypeValue.toLowerCase() === "fixed" ? "Passed" : "Failed";
+    loanTypeValue.toUpperCase() !== "ARM" ? "Passed" : "Failed";
 
   if (loanTypePassed === "Failed") {
     allPassed = false;
