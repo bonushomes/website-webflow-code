@@ -2152,7 +2152,7 @@ function submitHomeData() {
     ).value,
     isThirtyYearFixed: document.querySelector('[data-input="30-year-fixed"]')
       .value,
-    esitmated_value: document.querySelector('[data-input="home-value-est"]')
+    estimated_value: document.querySelector('[data-input="home-value-est"]')
       .value,
   };
   console.log("step 2 form data", formData);
@@ -2174,7 +2174,7 @@ function submitHomeData() {
     "MORTGAGE_LOAN_TYPE",
     formData.isThirtyYearFixed == "Yes" ? "Fixed" : ""
   );
-  updateHomeProfileValues("ESTIMATED_VALUE", formData.esitmated_value);
+  updateHomeProfileValues("ESTIMATED_VALUE", formData.estimated_value);
 
   if (!homeDataValid(formData)) {
     console.log("base payload invalid", basePayload);
@@ -2220,6 +2220,14 @@ function updateEligibilityCheck(id, newValue) {
 }
 
 function homeDataValid(data) {
+  function parseFirstNumberFromRange(value) {
+    if (typeof value !== "string") return 0;
+
+    // Match a number pattern like "$600,000" at the beginning of the string
+    const match = value.match(/\$?([\d,]+)/);
+    return match ? parseInt(match[1].replace(/,/g, ""), 10) : 0;
+  }
+
   console.log("validating data", data);
   let valid = true;
 
@@ -2228,31 +2236,37 @@ function homeDataValid(data) {
     updateEligibilityCheck("HOME_TYPE", "Failed");
     valid = false;
   }
+
   if (data.beds < 3) {
     console.log("failed for bedrooms", data.bedrooms);
     updateEligibilityCheck("BEDS", "Failed");
     valid = false;
   }
+
   if (data.baths < 2) {
     console.log("failed for bathrooms", data.bathrooms);
     updateEligibilityCheck("BATHS", "Failed");
     valid = false;
   }
+
   if (data.acres == "> 1/3 acre" || parseInt(data.acres) > 0.333) {
     console.log("failed for acres");
     updateEligibilityCheck("ACRES", "Failed");
     valid = false;
   }
+
   if (data.square_footage < 1200 || data.square_footage > 3200) {
     console.log("failed for sq ft");
     updateEligibilityCheck("SQUARE_FOOTAGE", "Failed");
     valid = false;
   }
+
   if (data.mortgage_type == "No mortgage") {
     console.log("failed for mortgage type");
     updateEligibilityCheck("MORTGAGE_TYPE", "Failed");
     valid = false;
   }
+
   if (data.mortgage_interest_rate > 4.25) {
     console.log("failed for interest rate");
     updateEligibilityCheck("MORTGAGE_INTEREST_RATE", "Failed");
@@ -2265,11 +2279,13 @@ function homeDataValid(data) {
     updateEligibilityCheck("MORTGAGE_TERM", "Failed");
     valid = false;
   }
-  if (data.esitmated_value > 225000 || data.homeEstValue > 625000) {
+
+  if (parseFirstNumberFromRange(data.estimated_value) >= 600000) {
     console.log("failed for est home value");
     updateEligibilityCheck("ESTIMATED_VALUE", "Failed");
     valid = false;
   }
+
   if (
     data.mortgage_type !== "No mortgage" &&
     (!data.mortgage_interest_rate ||
