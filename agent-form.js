@@ -1425,7 +1425,8 @@ function validateAndBuildHomeProfile(propertyData) {
     });
   } else {
     const acreagePassed = acreageValue <= 0.333 ? "Passed" : "Failed";
-    const finalAcreageValue = acreageValue > 0.333 ? "> 1/3 acre" : "< 1/3 acre";
+    const finalAcreageValue =
+      acreageValue > 0.333 ? "> 1/3 acre" : "< 1/3 acre";
     checks.push({
       id: "ACRES",
       value: finalAcreageValue,
@@ -1567,8 +1568,7 @@ function validateAndBuildHomeProfile(propertyData) {
     propertyData.valueEstimates && propertyData.valueEstimates.length > 0
       ? parseInt(propertyData.valueEstimates[0].estimate, 10) || 0
       : 0; // Default to 0
-  const estimatePassed =
-    estimate >= 225000 && estimate <= 625000 ? "Passed" : "Failed";
+  const estimatePassed = estimate < 600000 ? "Passed" : "Failed";
   if (estimatePassed === "Failed") allPassed = false;
 
   // Format the estimate with commas for thousands separators
