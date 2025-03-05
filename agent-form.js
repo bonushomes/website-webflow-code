@@ -1514,7 +1514,7 @@ function validateAndBuildHomeProfile(propertyData) {
       ? parseFloat(propertyData.mortgages[0].interestRate) || 0
       : 0;
 
-  const ratePassed = rateVal > 0 && rateVal <= 4.25 ? "Passed" : "Failed";
+  const ratePassed = rateVal > 0 && rateVal <= 4 ? "Passed" : "Failed";
 
   if (ratePassed === "Failed") allPassed = false;
 

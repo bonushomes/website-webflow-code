@@ -2267,7 +2267,7 @@ function homeDataValid(data) {
     valid = false;
   }
 
-  if (data.mortgage_interest_rate > 4.25) {
+  if (data.mortgage_interest_rate > 4) {
     console.log("failed for interest rate");
     updateEligibilityCheck("MORTGAGE_INTEREST_RATE", "Failed");
     valid = false;
