@@ -657,7 +657,7 @@ async function submitDataToAPI(propertyData, userData) {
 
   try {
     const response = await fetch(
-      "https://6mkwa74oj8.execute-api.us-east-2.amazonaws.com/submit",
+      "https://vyki8z4pia.execute-api.us-west-1.amazonaws.com/prod/submitAgentWebsiteLead",
       {
         method: "POST",
         headers: {
