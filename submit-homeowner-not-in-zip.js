@@ -398,7 +398,7 @@ async function submitDataToAPI(data, userData) {
     console.log("Starting API submission...");
 
     const response = await fetch(
-      "https://prr3s34b9e.execute-api.us-east-2.amazonaws.com/bonussubmitlead",
+      "https://vpqqjszp06.execute-api.us-west-1.amazonaws.com/prod/submitHomeownerWebsiteLead",
       {
         method: "POST",
         headers: {
