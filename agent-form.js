@@ -1373,7 +1373,7 @@ function validateAndBuildHomeProfile(propertyData) {
 
   // BEDS: Handle undefined propertyData.numOfBeds
   const bedValue = propertyData?.numOfBeds ?? ""; // Default to empty string if undefined
-  const bedPassed = bedValue >= 3 ? "Passed" : "Failed";
+  const bedPassed = bedValue >= 0 ? "Passed" : "Failed";
   if (bedPassed === "Failed") allPassed = false;
   checks.push({
     id: "BEDS",
@@ -1383,7 +1383,7 @@ function validateAndBuildHomeProfile(propertyData) {
 
   // BATHS: Handle undefined propertyData.numOfBaths
   const bathValue = propertyData?.numOfBaths ?? ""; // Default to empty string if undefined
-  const bathPassed = bathValue >= 2 ? "Passed" : "Failed";
+  const bathPassed = bathValue >= 0 ? "Passed" : "Failed";
   if (bathPassed === "Failed") allPassed = false;
   checks.push({
     id: "BATHS",
