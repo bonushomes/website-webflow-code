@@ -827,18 +827,18 @@ function prefillForm(data) {
     },
     bedrooms: (val) => {
       // If 0 or empty, return an empty string (not valid)
-      //if (!val || val === "0") {
-       // return "";
-      //}
+      if (!val || val === "0") {
+        return "";
+      }
       // If 5 or more, show "5+"
       const numericVal = parseFloat(val);
       return numericVal >= 5 ? "5+" : val;
     },
     bathrooms: (val) => {
       // If 0 or empty, return an empty string (not valid)
-     // if (!val || parseFloat(val) === 0) {
-        //return "";
-     // }
+      if (!val || parseFloat(val) === 0) {
+        return "";
+      }
       // If 3 or more, show "3+"
       const numericVal = parseFloat(val);
       return numericVal >= 3 ? "3+" : Math.floor(numericVal).toString();
@@ -2237,13 +2237,13 @@ function homeDataValid(data) {
     valid = false;
   }
 
-  if (data.beds < 0) {
+  if (data.beds !== 0 && data.beds < 3) {
     console.log("failed for bedrooms", data.bedrooms);
     updateEligibilityCheck("BEDS", "Failed");
     valid = false;
   }
 
-  if (data.baths < 0) {
+  if (data.baths !== 0 && data.baths < 2) {
     console.log("failed for bathrooms", data.bathrooms);
     updateEligibilityCheck("BATHS", "Failed");
     valid = false;
