@@ -80,6 +80,32 @@
 
     console.log(`✅ Sending Lead Submitted to Segment:`, segmentData);
     analytics.track('Lead Submitted', segmentData);
+
+if (typeof fbq === 'function') {
+  fbq('track', 'Lead', {
+    email: segmentData.email,
+    phone: segmentData.phone,
+    firstName: segmentData.first_name,
+    lastName: segmentData.last_name,
+    client_user_agent: navigator.userAgent,
+
+    home_address: segmentData.home_address,
+    form_type: segmentData.form_type,
+    source: segmentData.source,
+    brokerage: segmentData.brokerage,
+
+    locale: navigator.language,
+    deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    event_source_url: window.location.href,
+
+    value: 0,
+    currency: 'USD'
+  }, {
+    eventID: segmentData.event_id
+  });
+} else {
+  console.warn('Meta Pixel (fbq) not available');
+}
   }
 
   // 5. Initialize UTM capture immediately
