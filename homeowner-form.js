@@ -1112,13 +1112,14 @@ function validateAddressResponse(data) {
     location = data.errors[0]?.extensions?.locationProfile;
   }
 
-  if (location?.isInPreferredZipCode === true) {
-    return true;
+  // Determine actual qualification
+  let locationQualifies = false;
+  if (location?.isInPreferredZipCode === true || 
+      location?.isInOperatedMSA === true || 
+      location?.isInOperatedState === true) {
+    locationQualifies = true;
   }
-
-  if (location?.isInOperatedMSA === true) {
-    return true;
-  }
+  
   appState.locationQualifies = locationQualifies;
 
   return true;
