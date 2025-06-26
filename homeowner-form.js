@@ -1116,7 +1116,7 @@ function validateAddressResponse(data) {
     return true;
   }
 
-  return false;
+  return true;
 }
 
 function addStepToParams(step) {
