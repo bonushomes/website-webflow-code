@@ -1,5 +1,9 @@
 console.log("homeowner js loaded");
 
+const appState = {
+  locationQualifies: false
+};
+
 // Find all elements with the data-step attribute
 const steps = Array.from(document.querySelectorAll("[data-step]"));
 
@@ -1115,6 +1119,7 @@ function validateAddressResponse(data) {
   if (location?.isInOperatedMSA === true) {
     return true;
   }
+  appState.locationQualifies = locationQualifies;
 
   return true;
 }
@@ -1623,8 +1628,10 @@ async function handleAddressSubmission() {
         return;
       } else {
         // If at least one is true, mark as Passed.
-        basePayload.locationProfile.eligibilityCheck = "Passed";
-        basePayload.isQualified = true;
+        // basePayload.locationProfile.eligibilityCheck = "Passed";
+        // basePayload.isQualified = true;
+        basePayload.locationProfile.eligibilityCheck = (appState.locationQualifies || false) ? "Passed" : "Failed";
+        basePayload.isQualified = (appState.locationQualifies || false);
       }
     }
 
