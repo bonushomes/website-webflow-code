@@ -1110,7 +1110,6 @@ function validateAddressResponse(data) {
   if (!location && data?.errors && data.errors.length > 0) {
     location = data.errors[0]?.extensions?.locationProfile;
   }
-  let locationQualifies = false;
   
   // Determine actual qualification
   let locationQualifies = false;
