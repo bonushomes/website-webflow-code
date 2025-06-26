@@ -135,6 +135,7 @@ const appState = {
   propertyData: null,
   userData: null,
   googleAutocompleteData: null, // Add a place to store Autocomplete data
+  locationQualifies: false
 };
 
 function validateFormInput(dataStep) {
@@ -1109,17 +1110,17 @@ function validateAddressResponse(data) {
   if (!location && data?.errors && data.errors.length > 0) {
     location = data.errors[0]?.extensions?.locationProfile;
   }
+  let locationQualifies = false;
+  
+  // Determine actual qualification
+  let locationQualifies = false;
+  if (location?.isInPreferredZipCode === true || 
+      location?.isInOperatedMSA === true || 
+      location?.isInOperatedState === true) {
+    locationQualifies = true;
+  }
+  appState.locationQualifies = locationQualifies;
 
-  // Now run our cascade logic:
-  if (location?.isInPreferredZipCode === true) {
-    return true;
-  }
-  if (location?.isInOperatedMSA === true) {
-    return true;
-  }
-  if (location?.isInOperatedState === true) {
-    return true;
-  }
   return true;
 }
 
@@ -1598,21 +1599,8 @@ async function submitDataToAPI(propertyData, userData) {
     : addressData.state; // Make sure this uses the transformed state if others are not available
 
   function determineLocationEligibility(data) {
-    if (
-      data.isInOperatedMSA ||
-      data.isInOperatedState ||
-      isInPreferredZipCode
-    ) {
-      return "Passed";
-    }
-    if (
-      !data.isInOperatedMSA &&
-      !data.isInOperatedState &&
-      !data.isInPreferredZipCode
-    ) {
-      return "Failed";
-    }
-    return "NONE";
+    // Use the stored location qualification from appState
+    return appState.locationQualifies ? "Passed" : "Failed";
   }
 
   const payload = {
