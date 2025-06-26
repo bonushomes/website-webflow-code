@@ -1120,7 +1120,7 @@ function validateAddressResponse(data) {
   if (location?.isInOperatedState === true) {
     return true;
   }
-  return false;
+  return true;
 }
 
 // function setupQueryParamCheck() {
