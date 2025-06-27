@@ -1,7 +1,7 @@
 console.log("homeowner js loaded");
 
 const appState = {
-  locationQualifies: false
+  locationQualifies: false,
 };
 
 // Find all elements with the data-step attribute
@@ -1114,12 +1114,14 @@ function validateAddressResponse(data) {
 
   // Determine actual qualification
   let locationQualifies = false;
-  if (location?.isInPreferredZipCode === true || 
-      location?.isInOperatedMSA === true || 
-      location?.isInOperatedState === true) {
+  if (
+    location?.isInPreferredZipCode === true ||
+    location?.isInOperatedMSA === true ||
+    location?.isInOperatedState === true
+  ) {
     locationQualifies = true;
   }
-  
+
   appState.locationQualifies = locationQualifies;
 
   return true;
@@ -1319,7 +1321,7 @@ function updateHomeAddressPayload(data) {
   }
 
   updateHomeProfileValues("HOME_TYPE", data.homeType);
-  updateHomeProfileValues("BEDS", data.numOfBaths);
+  updateHomeProfileValues("BEDS", data.numOfBeds);
   updateHomeProfileValues("BATHS", data.numOfBaths);
   updateHomeProfileValues("ACRES", data.acreage);
   updateHomeProfileValues("SQUARE_FOOTAGE", data.squareFootage);
@@ -1631,8 +1633,9 @@ async function handleAddressSubmission() {
         // If at least one is true, mark as Passed.
         // basePayload.locationProfile.eligibilityCheck = "Passed";
         // basePayload.isQualified = true;
-        basePayload.locationProfile.eligibilityCheck = (appState.locationQualifies || false) ? "Passed" : "Failed";
-        basePayload.isQualified = (appState.locationQualifies || false);
+        basePayload.locationProfile.eligibilityCheck =
+          appState.locationQualifies || false ? "Passed" : "Failed";
+        basePayload.isQualified = appState.locationQualifies || false;
       }
     }
 
@@ -1725,6 +1728,14 @@ async function handleAddressSubmission() {
         if (mortgageTermItem) {
           mortgageTermItem.value += " years"; // Add " years" to the value in basePayload
         }
+
+        // Ensure address data is preserved before storing
+        console.log("Address data being preserved for location failure:", {
+          streetAddress: basePayload.streetAddress,
+          city: basePayload.city,
+          state: basePayload.state,
+          zipCode: basePayload.zipCode,
+        });
 
         sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
         window.location.href = "/submit-not-in-zip";
@@ -2186,6 +2197,14 @@ function submitHomeData() {
 
   if (!homeDataValid(formData)) {
     console.log("base payload invalid", basePayload);
+
+    // Ensure address data is preserved before storing
+    console.log("Address data being preserved:", {
+      streetAddress: basePayload.streetAddress,
+      city: basePayload.city,
+      state: basePayload.state,
+      zipCode: basePayload.zipCode,
+    });
 
     sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
     window.location.href = "/submit-home-disqualified";
@@ -3675,7 +3694,7 @@ async function submitFinalConsent() {
     );
     if (finalConsentLabel) {
       finalConsentLabel.textContent =
-        "Good deal, we won’t share your info without your consent.";
+        "Good deal, we won't share your info without your consent.";
     }
   }
 

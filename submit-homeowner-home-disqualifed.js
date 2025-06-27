@@ -45,7 +45,7 @@ function showSubmitSuccess() {
   const formStep = document.querySelector('[data-step="form"]');
   formStep.style.display = "none";
 
-  // If you’re not using the loading step, you can remove this
+  // If you're not using the loading step, you can remove this
   removeLoadingStep();
 
   // Show the success step
@@ -365,6 +365,16 @@ document.addEventListener("DOMContentLoaded", function () {
       // Parse the string back into an object
       homeDataObject = JSON.parse(basePayload);
       console.log("session data", homeDataObject);
+
+      // Debug address data specifically
+      console.log("Address data from session:", {
+        streetAddress: homeDataObject.streetAddress,
+        city: homeDataObject.city,
+        state: homeDataObject.state,
+        zipCode: homeDataObject.zipCode,
+      });
+    } else {
+      console.warn("No basePayload found in sessionStorage");
     }
     console.log("session data", homeDataObject);
     console.log("userData", userData);
@@ -403,8 +413,13 @@ async function submitDataToAPI(data, userData) {
     ""
   );
 
+  // Ensure address data is preserved from the original basePayload
   const finalPayload = {
-    ...data,
+    streetAddress: data.streetAddress || "",
+    city: data.city || "",
+    state: data.state || "",
+    zipCode: data.zipCode || "",
+    userType: data.userType || "Homeowner",
     contactInfo: {
       ...data.contactInfo,
       firstName: userData.firstName,
@@ -413,6 +428,14 @@ async function submitDataToAPI(data, userData) {
       phoneNumber: userData.phone,
       bonusDiscoverySource: sanitizedDiscovery,
     },
+    isQualified: data.isQualified || false,
+    locationProfile: data.locationProfile || {
+      isInPreferredZipCode: false,
+      isInOperatedMSA: false,
+      isInOperatedState: false,
+      eligibilityCheck: "Failed",
+    },
+    homeProfile: data.homeProfile || [],
     reasonUnqualified: "FailedFeaturesCheck",
   };
 
