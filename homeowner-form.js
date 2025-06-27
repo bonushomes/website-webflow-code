@@ -1736,7 +1736,18 @@ async function handleAddressSubmission() {
           state: basePayload.state,
           zipCode: basePayload.zipCode,
         });
-
+        // Save full address for analytics
+        sessionStorage.setItem(
+          "saved_address",
+          [
+            basePayload.streetAddress,
+            basePayload.city,
+            basePayload.state,
+            basePayload.zipCode,
+          ]
+            .filter(Boolean)
+            .join(", ")
+        );
         sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
         window.location.href = "/submit-not-in-zip";
         return;
@@ -2197,7 +2208,6 @@ function submitHomeData() {
 
   if (!homeDataValid(formData)) {
     console.log("base payload invalid", basePayload);
-
     // Ensure address data is preserved before storing
     console.log("Address data being preserved:", {
       streetAddress: basePayload.streetAddress,
@@ -2205,7 +2215,18 @@ function submitHomeData() {
       state: basePayload.state,
       zipCode: basePayload.zipCode,
     });
-
+    // Save full address for analytics
+    sessionStorage.setItem(
+      "saved_address",
+      [
+        basePayload.streetAddress,
+        basePayload.city,
+        basePayload.state,
+        basePayload.zipCode,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    );
     sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
     window.location.href = "/submit-home-disqualified";
     return;
