@@ -3571,6 +3571,15 @@ async function submitFinal() {
     userData.bonusDiscoverySource.replace(/[^a-zA-Z]/g, "");
   basePayload.isQualified = mortgagePITIPass;
 
+  // Check if any homeProfile item is 'Failed' before final submission
+  const anyFailed = basePayload.homeProfile.some(
+    (item) => item.eligibilityCheck === "Failed"
+  );
+  if (anyFailed) {
+    basePayload.isQualified = false;
+    basePayload.reasonUnqualified = "FailedFeaturesCheck";
+  }
+
   try {
     // const apiResponse = await submitDataToAPI(homeData, userData, step3Data);
     if (PassStep4Validation) {
