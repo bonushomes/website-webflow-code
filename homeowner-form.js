@@ -2188,6 +2188,12 @@ function submitHomeData() {
       currentStep.style.display = "none";
       nextStep.style.display = "block";
       addStepToParams("3");
+
+      // Change the step 3 title if home data validation failed
+      const step3Title = document.getElementById("step-3-title");
+      if (step3Title) {
+        step3Title.textContent = "Now, a little more info about your home.";
+      }
     }
     return;
   }
