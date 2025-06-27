@@ -3584,8 +3584,10 @@ async function submitFinal() {
     // const apiResponse = await submitDataToAPI(homeData, userData, step3Data);
     if (PassStep4Validation) {
       showLoading("5");
-      delete basePayload["reasonUnqualified"];
-      basePayload.locationProfile.eligibilityCheck = "Passed";
+      if (basePayload.isQualified) {
+        delete basePayload["reasonUnqualified"];
+        basePayload.locationProfile.eligibilityCheck = "Passed";
+      }
       const apiResponse = await submitDataToAPI();
 
       // Store the API response in sessionStorage
