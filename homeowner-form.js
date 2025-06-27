@@ -2178,9 +2178,17 @@ function submitHomeData() {
 
   if (!homeDataValid(formData)) {
     console.log("base payload invalid", basePayload);
-
+    basePayload.isQualified = false;
+    basePayload.reasonUnqualified = "FailedFeaturesCheck";
     sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
-    window.location.href = "/submit-home-disqualified";
+    // Instead of redirecting, proceed to the next step
+    const currentStep = document.querySelector('[data-step="2"]');
+    const nextStep = document.querySelector('[data-step="3"]');
+    if (currentStep && nextStep) {
+      currentStep.style.display = "none";
+      nextStep.style.display = "block";
+      addStepToParams("3");
+    }
     return;
   }
 
@@ -3667,7 +3675,7 @@ async function submitFinalConsent() {
     );
     if (finalConsentLabel) {
       finalConsentLabel.textContent =
-        "Good deal, we won’t share your info without your consent.";
+        "Good deal, we won't share your info without your consent.";
     }
   }
 
