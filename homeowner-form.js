@@ -3582,12 +3582,10 @@ async function submitFinal() {
 
   try {
     // const apiResponse = await submitDataToAPI(homeData, userData, step3Data);
-    if (PassStep4Validation) {
+    if (PassStep4Validation && basePayload.isQualified) {
       showLoading("5");
-      if (basePayload.isQualified) {
-        delete basePayload["reasonUnqualified"];
-        basePayload.locationProfile.eligibilityCheck = "Passed";
-      }
+      delete basePayload["reasonUnqualified"];
+      basePayload.locationProfile.eligibilityCheck = "Passed";
       const apiResponse = await submitDataToAPI();
 
       // Store the API response in sessionStorage
@@ -3596,11 +3594,10 @@ async function submitFinal() {
       sessionStorage.setItem("finalBasePayload", JSON.stringify(basePayload));
 
       window.location.href = "/submit-home-submitted";
-      return apiResponse; // You can return the API response if needed
+      return apiResponse;
     } else {
-      const step = document.querySelector('[data-step="not-qualified"]');
       showLoading("5");
-      removeLoading(step);
+      window.location.href = "/submit-home-disqualified";
       return;
     }
   } catch (error) {
