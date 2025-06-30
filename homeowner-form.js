@@ -3597,7 +3597,15 @@ async function submitFinal() {
       return apiResponse;
     } else {
       showLoading("5");
-      window.location.href = "/submit-home-disqualified";
+      // Hide all steps
+      document
+        .querySelectorAll("[data-step]")
+        .forEach((step) => (step.style.display = "none"));
+      // Show the not qualified step
+      const notQualifiedStep = document.querySelector(
+        '[data-step="not-qualified"]'
+      );
+      if (notQualifiedStep) notQualifiedStep.style.display = "block";
       return;
     }
   } catch (error) {
