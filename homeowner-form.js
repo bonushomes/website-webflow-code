@@ -2764,7 +2764,7 @@ function submitStep3() {
 
 //   // Check if includes-tax-insurance has any selected option
 //   const includesTaxInsuranceWrapper = stepDiv.querySelector(
-//     '[data-input="includes-tax-insurance"]'
+//     '[data-input="includes-taxes-insurance"]'
 //   );
 //   const isTaxInsuranceSelected = includesTaxInsuranceWrapper
 //     ? includesTaxInsuranceWrapper.querySelectorAll("[data-select].w--current")
@@ -3535,14 +3535,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   legalCheckbox.addEventListener("change", validateInputs);
-
-  submitButton.addEventListener("click", function (event) {
-    event.preventDefault();
-    if (!legalCheckbox.checked) {
-      console.log("Checkbox is not checked.");
-      return;
-    }
-  });
 });
 
 async function submitFinal() {
@@ -3581,22 +3573,26 @@ async function submitFinal() {
   }
 
   try {
-    // const apiResponse = await submitDataToAPI(homeData, userData, step3Data);
-    if (PassStep4Validation && basePayload.isQualified) {
-      showLoading("5");
+    // ALWAYS make the API call regardless of qualification
+    showLoading("5");
+
+    // Only delete reasonUnqualified if the lead is actually qualified
+    if (basePayload.isQualified) {
       delete basePayload["reasonUnqualified"];
       basePayload.locationProfile.eligibilityCheck = "Passed";
-      const apiResponse = await submitDataToAPI();
+    }
 
-      // Store the API response in sessionStorage
-      sessionStorage.setItem("responseData", JSON.stringify(apiResponse));
-      sessionStorage.removeItem("basePayload");
-      sessionStorage.setItem("finalBasePayload", JSON.stringify(basePayload));
+    const apiResponse = await submitDataToAPI();
 
+    // Store the API response in sessionStorage
+    sessionStorage.setItem("responseData", JSON.stringify(apiResponse));
+    sessionStorage.removeItem("basePayload");
+    sessionStorage.setItem("finalBasePayload", JSON.stringify(basePayload));
+
+    // Determine redirect based on qualification
+    if (basePayload.isQualified) {
       window.location.href = "/submit-home-submitted";
-      return apiResponse;
     } else {
-      showLoading("5");
       // Hide all steps
       document
         .querySelectorAll("[data-step]")
@@ -3606,10 +3602,23 @@ async function submitFinal() {
         '[data-step="not-qualified"]'
       );
       if (notQualifiedStep) notQualifiedStep.style.display = "block";
-      return;
     }
+
+    return apiResponse;
   } catch (error) {
     console.error("Submission error:", error);
+    // Even if there's an error, we should still redirect appropriately
+    if (basePayload.isQualified) {
+      window.location.href = "/submit-home-submitted";
+    } else {
+      document
+        .querySelectorAll("[data-step]")
+        .forEach((step) => (step.style.display = "none"));
+      const notQualifiedStep = document.querySelector(
+        '[data-step="not-qualified"]'
+      );
+      if (notQualifiedStep) notQualifiedStep.style.display = "block";
+    }
   }
 }
 
