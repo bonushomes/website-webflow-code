@@ -2,12 +2,12 @@
 // Place this in Webflow Custom Code > Head or Footer
 
 (function () {
-  'use strict';
+  "use strict";
 
   // 1. UTM Retrieval Function
   function getUtms() {
     const utms = {};
-    ['utm_source', 'utm_medium', 'utm_campaign'].forEach(key => {
+    ["utm_source", "utm_medium", "utm_campaign"].forEach((key) => {
       const value = localStorage.getItem(key);
       if (value) {
         utms[key] = value;
@@ -20,7 +20,7 @@
   function saveUtms() {
     const params = new URLSearchParams(window.location.search);
 
-    ['utm_source', 'utm_medium', 'utm_campaign'].forEach(key => {
+    ["utm_source", "utm_medium", "utm_campaign"].forEach((key) => {
       const value = params.get(key);
       if (value) {
         localStorage.setItem(key, value);
@@ -33,36 +33,49 @@
     // Save address if it exists
     const addressInput = document.querySelector('[data-input="address"]');
     if (addressInput && addressInput.value.trim()) {
-      sessionStorage.setItem('saved_address', addressInput.value);
+      sessionStorage.setItem("saved_address", addressInput.value);
     }
   }
 
   // 4. Universal Segment Event Sender for Final Submissions
   function sendFinalSegmentEvent() {
     // Check if Segment analytics is available
-    if (typeof analytics === 'undefined') {
-      console.warn('Segment analytics not loaded');
+    if (typeof analytics === "undefined") {
+      console.warn("Segment analytics not loaded");
+      return;
+    }
+
+    // Only send events on production
+    if (window.location.hostname !== "bonushomes.com") {
+      console.log(
+        "Skipping Segment and Facebook events: not on production domain"
+      );
       return;
     }
 
     const utms = getUtms();
 
     // Get current form data
-    const firstName = document.querySelector('[data-input="first-name"]')?.value || '';
-    const lastName = document.querySelector('[data-input="last-name"]')?.value || '';
-    const email = document.querySelector('[data-input="email"]')?.value || '';
-    const phone = document.querySelector('[data-input="phone"]')?.value || '';
-    const source = document.querySelector('[data-input="discovery-source"]')?.value || '';
-    const brokerage = document.querySelector('[data-input="brokerage"]')?.value || '';
+    const firstName =
+      document.querySelector('[data-input="first-name"]')?.value || "";
+    const lastName =
+      document.querySelector('[data-input="last-name"]')?.value || "";
+    const email = document.querySelector('[data-input="email"]')?.value || "";
+    const phone = document.querySelector('[data-input="phone"]')?.value || "";
+    const source =
+      document.querySelector('[data-input="discovery-source"]')?.value || "";
+    const brokerage =
+      document.querySelector('[data-input="brokerage"]')?.value || "";
 
     // Get address from current page OR from saved session data
-    let homeAddress = document.querySelector('[data-input="address"]')?.value || '';
+    let homeAddress =
+      document.querySelector('[data-input="address"]')?.value || "";
     if (!homeAddress) {
-      homeAddress = sessionStorage.getItem('saved_address') || '';
+      homeAddress = sessionStorage.getItem("saved_address") || "";
     }
 
     // Determine form type based on brokerage field existence
-    const formType = brokerage ? 'agent' : 'homeowner';
+    const formType = brokerage ? "agent" : "homeowner";
 
     const segmentData = {
       first_name: firstName,
@@ -75,37 +88,42 @@
       form_type: formType,
       page_url: window.location.href,
       ...utms,
-      event_id: 'lead-' + Date.now()
+      event_id: "lead-" + Date.now(),
     };
 
     console.log(`✅ Sending Lead Submitted to Segment:`, segmentData);
-    analytics.track('Lead Submitted', segmentData);
+    analytics.track("Lead Submitted", segmentData);
 
-if (typeof fbq === 'function') {
-  fbq('track', 'Lead', {
-    email: segmentData.email,
-    phone: segmentData.phone,
-    firstName: segmentData.first_name,
-    lastName: segmentData.last_name,
-    client_user_agent: navigator.userAgent,
+    if (typeof fbq === "function") {
+      fbq(
+        "track",
+        "Lead",
+        {
+          email: segmentData.email,
+          phone: segmentData.phone,
+          firstName: segmentData.first_name,
+          lastName: segmentData.last_name,
+          client_user_agent: navigator.userAgent,
 
-    home_address: segmentData.home_address,
-    form_type: segmentData.form_type,
-    source: segmentData.source,
-    brokerage: segmentData.brokerage,
+          home_address: segmentData.home_address,
+          form_type: segmentData.form_type,
+          source: segmentData.source,
+          brokerage: segmentData.brokerage,
 
-    locale: navigator.language,
-    deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    event_source_url: window.location.href,
+          locale: navigator.language,
+          deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          event_source_url: window.location.href,
 
-    value: 0,
-    currency: 'USD'
-  }, {
-    eventID: segmentData.event_id
-  });
-} else {
-  console.warn('Meta Pixel (fbq) not available');
-}
+          value: 0,
+          currency: "USD",
+        },
+        {
+          eventID: segmentData.event_id,
+        }
+      );
+    } else {
+      console.warn("Meta Pixel (fbq) not available");
+    }
   }
 
   // 5. Initialize UTM capture immediately
@@ -114,9 +132,11 @@ if (typeof fbq === 'function') {
   // 6. Set up address saving on form interactions
   function setupAddressSaving() {
     // Save address when address validation button is clicked
-    const addressValidationButton = document.querySelector('[data-trigger="address-validation"]');
+    const addressValidationButton = document.querySelector(
+      '[data-trigger="address-validation"]'
+    );
     if (addressValidationButton) {
-      addressValidationButton.addEventListener('click', function () {
+      addressValidationButton.addEventListener("click", function () {
         saveAddress();
       });
     }
@@ -126,27 +146,35 @@ if (typeof fbq === 'function') {
   function initSegmentTracking() {
     const currentPath = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
-    const currentStep = urlParams.get('step');
+    const currentStep = urlParams.get("step");
 
     // Set up address saving for all form pages
-    if (currentPath.includes('/form')) {
+    if (currentPath.includes("/form")) {
       setupAddressSaving();
     }
 
     // Set up final submission tracking based on page
-    if (currentPath === '/form-agent' || currentPath.includes('/form-agent')) {
+    if (currentPath === "/form-agent" || currentPath.includes("/form-agent")) {
       setupAgentFormFinalSubmit();
-    } else if (currentPath === '/form' || (currentPath.includes('/form') && !currentPath.includes(
-        '/form-agent'))) {
+    } else if (
+      currentPath === "/form" ||
+      (currentPath.includes("/form") && !currentPath.includes("/form-agent"))
+    ) {
       setupHomeownerFormFinalSubmit();
-    } else if (currentPath === '/submit-not-in-zip' || currentPath.includes(
-        '/submit-not-in-zip')) {
+    } else if (
+      currentPath === "/submit-not-in-zip" ||
+      currentPath.includes("/submit-not-in-zip")
+    ) {
       setupNotInAreaFinalSubmit();
-    } else if (currentPath === '/submit-home-disqualified' || currentPath.includes(
-        '/submit-home-disqualified')) {
+    } else if (
+      currentPath === "/submit-home-disqualified" ||
+      currentPath.includes("/submit-home-disqualified")
+    ) {
       setupDoesNotQualifyFinalSubmit();
-    } else if (currentPath === '/submit-agent-fail-not-in-state' || currentPath.includes(
-        '/submit-agent-fail-not-in-state')) {
+    } else if (
+      currentPath === "/submit-agent-fail-not-in-state" ||
+      currentPath.includes("/submit-agent-fail-not-in-state")
+    ) {
       setupAgentNotInAreaFinalSubmit();
     }
   }
@@ -155,15 +183,17 @@ if (typeof fbq === 'function') {
     const finalSubmitButton = document.querySelector('[data-alt="submit"]');
 
     if (finalSubmitButton) {
-      finalSubmitButton.addEventListener('click', function (event) {
+      finalSubmitButton.addEventListener("click", function (event) {
         const urlParams = new URLSearchParams(window.location.search);
-        const currentStep = urlParams.get('step');
+        const currentStep = urlParams.get("step");
 
         // Step 5: Final homeowner form submission
-        if (currentStep === '5') {
-          const isValid = typeof validateFormInput === 'function' ? validateFormInput('5') :
-            true;
-          const legalCheckbox = document.querySelector('#legal-checkbox');
+        if (currentStep === "5") {
+          const isValid =
+            typeof validateFormInput === "function"
+              ? validateFormInput("5")
+              : true;
+          const legalCheckbox = document.querySelector("#legal-checkbox");
           const legalChecked = legalCheckbox && legalCheckbox.checked;
 
           if (isValid && legalChecked) {
@@ -171,8 +201,8 @@ if (typeof fbq === 'function') {
           }
         }
         // Step 6: Does not qualify agent pitch submission
-        else if (currentStep === '6') {
-          const legalCheckbox = document.querySelector('#legal-checkbox');
+        else if (currentStep === "6") {
+          const legalCheckbox = document.querySelector("#legal-checkbox");
           const legalChecked = legalCheckbox ? legalCheckbox.checked : true;
 
           if (legalChecked) {
@@ -187,17 +217,20 @@ if (typeof fbq === 'function') {
     const submitButton = document.querySelector('[data-alt="submit"]');
 
     if (submitButton) {
-      submitButton.addEventListener('click', function (event) {
+      submitButton.addEventListener("click", function (event) {
         const step2 = document.querySelector('[data-step="2"]');
         const step1 = document.querySelector('[data-step="1"]');
 
-        const isOnStep2 = (step2 && window.getComputedStyle(step2).display !== 'none') ||
-          (step1 && window.getComputedStyle(step1).display === 'none');
+        const isOnStep2 =
+          (step2 && window.getComputedStyle(step2).display !== "none") ||
+          (step1 && window.getComputedStyle(step1).display === "none");
 
         if (isOnStep2) {
-          const isValid = typeof validateFormInput === 'function' ? validateFormInput('2') :
-            true;
-          const legalCheckbox = document.querySelector('#legal-checkbox');
+          const isValid =
+            typeof validateFormInput === "function"
+              ? validateFormInput("2")
+              : true;
+          const legalCheckbox = document.querySelector("#legal-checkbox");
           const legalChecked = legalCheckbox && legalCheckbox.checked;
 
           if (isValid && legalChecked) {
@@ -212,9 +245,10 @@ if (typeof fbq === 'function') {
     const submitButton = document.querySelector('[data-alt="submit"]');
 
     if (submitButton) {
-      submitButton.addEventListener('click', function (event) {
-        const isValid = typeof validateFormInput === 'function' ? validateFormInput() : true;
-        const legalCheckbox = document.querySelector('#legal-checkbox');
+      submitButton.addEventListener("click", function (event) {
+        const isValid =
+          typeof validateFormInput === "function" ? validateFormInput() : true;
+        const legalCheckbox = document.querySelector("#legal-checkbox");
         const legalChecked = legalCheckbox && legalCheckbox.checked;
 
         if (isValid && legalChecked) {
@@ -228,9 +262,10 @@ if (typeof fbq === 'function') {
     const submitButton = document.querySelector('[data-alt="submit"]');
 
     if (submitButton) {
-      submitButton.addEventListener('click', function (event) {
-        const isValid = typeof validateFormInput === 'function' ? validateFormInput() : true;
-        const legalCheckbox = document.querySelector('#legal-checkbox');
+      submitButton.addEventListener("click", function (event) {
+        const isValid =
+          typeof validateFormInput === "function" ? validateFormInput() : true;
+        const legalCheckbox = document.querySelector("#legal-checkbox");
         const legalChecked = legalCheckbox && legalCheckbox.checked;
 
         if (isValid && legalChecked) {
@@ -244,9 +279,10 @@ if (typeof fbq === 'function') {
     const submitButton = document.querySelector('[data-alt="submit"]');
 
     if (submitButton) {
-      submitButton.addEventListener('click', function (event) {
-        const isValid = typeof validateFormInput === 'function' ? validateFormInput() : true;
-        const legalCheckbox = document.querySelector('#legal-checkbox');
+      submitButton.addEventListener("click", function (event) {
+        const isValid =
+          typeof validateFormInput === "function" ? validateFormInput() : true;
+        const legalCheckbox = document.querySelector("#legal-checkbox");
         const legalChecked = legalCheckbox ? legalCheckbox.checked : true;
 
         if (isValid && legalChecked) {
@@ -257,24 +293,23 @@ if (typeof fbq === 'function') {
   }
 
   // 8. Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSegmentTracking);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSegmentTracking);
   } else {
     initSegmentTracking();
   }
 
   // 9. Debug functions
   window.checkUtms = function () {
-    console.log('Current UTMs:', getUtms());
+    console.log("Current UTMs:", getUtms());
     return getUtms();
   };
 
   window.checkSavedAddress = function () {
-    console.log('Saved address:', sessionStorage.getItem('saved_address'));
+    console.log("Saved address:", sessionStorage.getItem("saved_address"));
   };
 
   window.testSegmentTracking = function () {
     sendFinalSegmentEvent();
   };
-
 })();
