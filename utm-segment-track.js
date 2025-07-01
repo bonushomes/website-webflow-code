@@ -45,49 +45,49 @@
       return;
     }
 
-    // Only send events and logs on production
+    const utms = getUtms();
+
+    // Get current form data
+    const firstName =
+      document.querySelector('[data-input="first-name"]')?.value || "";
+    const lastName =
+      document.querySelector('[data-input="last-name"]')?.value || "";
+    const email = document.querySelector('[data-input="email"]')?.value || "";
+    const phone = document.querySelector('[data-input="phone"]')?.value || "";
+    const source =
+      document.querySelector('[data-input="discovery-source"]')?.value || "";
+    const brokerage =
+      document.querySelector('[data-input="brokerage"]')?.value || "";
+
+    // Get address from current page OR from saved session data
+    let homeAddress =
+      document.querySelector('[data-input="address"]')?.value || "";
+    if (!homeAddress) {
+      homeAddress = sessionStorage.getItem("saved_address") || "";
+    }
+
+    // Determine form type based on brokerage field existence
+    const formType = brokerage ? "agent" : "homeowner";
+
+    const segmentData = {
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      phone: phone,
+      source: source,
+      brokerage: brokerage,
+      home_address: homeAddress,
+      form_type: formType,
+      page_url: window.location.href,
+      ...utms,
+      event_id: "lead-" + Date.now(),
+    };
+
+    // Only log and send events on production
     if (
       window.location.hostname === "bonushomes.com" ||
       window.location.hostname === "www.bonushomes.com"
     ) {
-      const utms = getUtms();
-
-      // Get current form data
-      const firstName =
-        document.querySelector('[data-input="first-name"]')?.value || "";
-      const lastName =
-        document.querySelector('[data-input="last-name"]')?.value || "";
-      const email = document.querySelector('[data-input="email"]')?.value || "";
-      const phone = document.querySelector('[data-input="phone"]')?.value || "";
-      const source =
-        document.querySelector('[data-input="discovery-source"]')?.value || "";
-      const brokerage =
-        document.querySelector('[data-input="brokerage"]')?.value || "";
-
-      // Get address from current page OR from saved session data
-      let homeAddress =
-        document.querySelector('[data-input="address"]')?.value || "";
-      if (!homeAddress) {
-        homeAddress = sessionStorage.getItem("saved_address") || "";
-      }
-
-      // Determine form type based on brokerage field existence
-      const formType = brokerage ? "agent" : "homeowner";
-
-      const segmentData = {
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        phone: phone,
-        source: source,
-        brokerage: brokerage,
-        home_address: homeAddress,
-        form_type: formType,
-        page_url: window.location.href,
-        ...utms,
-        event_id: "lead-" + Date.now(),
-      };
-
       console.log(`✅ Sending Lead Submitted to Segment:`, segmentData);
       analytics.track("Lead Submitted", segmentData);
 
@@ -120,9 +120,6 @@
       } else {
         console.warn("Meta Pixel (fbq) not available");
       }
-    } else {
-      // Not production, skip events and logs
-      return;
     }
   }
 
