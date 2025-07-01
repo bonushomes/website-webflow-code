@@ -45,84 +45,84 @@
       return;
     }
 
-    // Only send events on production
-    if (window.location.hostname !== "bonushomes.com") {
-      console.log(
-        "Skipping Segment and Facebook events: not on production domain"
-      );
-      return;
-    }
+    // Only send events and logs on production
+    if (
+      window.location.hostname === "bonushomes.com" ||
+      window.location.hostname === "www.bonushomes.com"
+    ) {
+      const utms = getUtms();
 
-    const utms = getUtms();
+      // Get current form data
+      const firstName =
+        document.querySelector('[data-input="first-name"]')?.value || "";
+      const lastName =
+        document.querySelector('[data-input="last-name"]')?.value || "";
+      const email = document.querySelector('[data-input="email"]')?.value || "";
+      const phone = document.querySelector('[data-input="phone"]')?.value || "";
+      const source =
+        document.querySelector('[data-input="discovery-source"]')?.value || "";
+      const brokerage =
+        document.querySelector('[data-input="brokerage"]')?.value || "";
 
-    // Get current form data
-    const firstName =
-      document.querySelector('[data-input="first-name"]')?.value || "";
-    const lastName =
-      document.querySelector('[data-input="last-name"]')?.value || "";
-    const email = document.querySelector('[data-input="email"]')?.value || "";
-    const phone = document.querySelector('[data-input="phone"]')?.value || "";
-    const source =
-      document.querySelector('[data-input="discovery-source"]')?.value || "";
-    const brokerage =
-      document.querySelector('[data-input="brokerage"]')?.value || "";
+      // Get address from current page OR from saved session data
+      let homeAddress =
+        document.querySelector('[data-input="address"]')?.value || "";
+      if (!homeAddress) {
+        homeAddress = sessionStorage.getItem("saved_address") || "";
+      }
 
-    // Get address from current page OR from saved session data
-    let homeAddress =
-      document.querySelector('[data-input="address"]')?.value || "";
-    if (!homeAddress) {
-      homeAddress = sessionStorage.getItem("saved_address") || "";
-    }
+      // Determine form type based on brokerage field existence
+      const formType = brokerage ? "agent" : "homeowner";
 
-    // Determine form type based on brokerage field existence
-    const formType = brokerage ? "agent" : "homeowner";
+      const segmentData = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        phone: phone,
+        source: source,
+        brokerage: brokerage,
+        home_address: homeAddress,
+        form_type: formType,
+        page_url: window.location.href,
+        ...utms,
+        event_id: "lead-" + Date.now(),
+      };
 
-    const segmentData = {
-      first_name: firstName,
-      last_name: lastName,
-      email: email,
-      phone: phone,
-      source: source,
-      brokerage: brokerage,
-      home_address: homeAddress,
-      form_type: formType,
-      page_url: window.location.href,
-      ...utms,
-      event_id: "lead-" + Date.now(),
-    };
+      console.log(`✅ Sending Lead Submitted to Segment:`, segmentData);
+      analytics.track("Lead Submitted", segmentData);
 
-    console.log(`✅ Sending Lead Submitted to Segment:`, segmentData);
-    analytics.track("Lead Submitted", segmentData);
-
-    if (typeof fbq === "function") {
-      fbq(
-        "track",
-        "Lead",
-        {
-          email: segmentData.email,
-          phone: segmentData.phone,
-          firstName: segmentData.first_name,
-          lastName: segmentData.last_name,
-          client_user_agent: navigator.userAgent,
-
-          home_address: segmentData.home_address,
-          form_type: segmentData.form_type,
-          source: segmentData.source,
-          brokerage: segmentData.brokerage,
-
+      if (typeof fbq === "function") {
+        const fbPayload = {
+          action_source: "website",
+          event_name: "Lead",
+          event_time: new Date().toISOString(),
+          user_data: {
+            email: segmentData.email,
+            phone: segmentData.phone,
+            firstName: segmentData.first_name,
+            lastName: segmentData.last_name,
+            client_user_agent: navigator.userAgent,
+          },
+          app_data_field: {
+            home_address: segmentData.home_address,
+            form_type: segmentData.form_type,
+            source: segmentData.source,
+            brokerage: segmentData.brokerage,
+          },
           locale: navigator.language,
           deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           event_source_url: window.location.href,
-
           value: 0,
           currency: "USD",
-        },
-        {
-          eventID: segmentData.event_id,
-        }
-      );
+        };
+        console.log("FB Payload:", fbPayload);
+        fbq("track", "Lead", fbPayload, { eventID: segmentData.event_id });
+      } else {
+        console.warn("Meta Pixel (fbq) not available");
+      }
     } else {
-      console.warn("Meta Pixel (fbq) not available");
+      // Not production, skip events and logs
+      return;
     }
   }
 
