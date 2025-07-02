@@ -351,6 +351,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   setupUserFormValidation();
   setupBackNavigation();
+
+  // Reset submission state if we're on the form page (not success page)
+  if (!window.location.pathname.includes("submit-agent-success")) {
+    sessionStorage.removeItem("formSubmitted");
+  } else {
+    // If we're on the success page, mark as submitted
+    sessionStorage.setItem("formSubmitted", "true");
+  }
 });
 
 // Hide all steps except step 1 initially
@@ -690,164 +698,6 @@ function transformStateToAbbrev(state) {
 }
 
 // let finalSubmissionSetup = false; // Flag to track if setupFinalSubmission has been called
-
-// async function handleAddressSubmission() {
-//   const startTime = performance.now();
-//   logWithDetails("SUBMISSION", "Starting address submission");
-
-//   const addressInput = document.querySelector('[data-input="address"]');
-//   const addressString = addressInput.value;
-//   logWithDetails("SUBMISSION", "Retrieved address from input", {
-//     address: addressString,
-//   });
-
-//   if (!isValidAddress(addressString)) {
-//     logWithDetails("SUBMISSION", "Address validation failed (client-side)");
-//     return;
-//   }
-
-//   showLoading("1");
-//   const addressData = parseAddress(addressString);
-//   console.log("addressData:", addressData); // Log the parsed address data
-
-//   logWithDetails("SUBMISSION", "Prepared API request", { addressData });
-
-//   try {
-//     const response = await fetch(
-//       "https://kfhxu6otvh.execute-api.us-east-2.amazonaws.com/validate",
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         mode: "cors",
-//         credentials: "omit",
-//         body: JSON.stringify(addressData),
-//       }
-//     );
-
-//     const data = await response.json();
-
-//     // Handle API errors first
-//     if (data.errors && data.errors.length > 0) {
-//       const propertyNotFoundError = data.errors.find(
-//         (e) => e.extensions?.code === "PROPERTY_NOT_FOUND"
-//       );
-
-//       if (propertyNotFoundError) {
-//         const locationProfile =
-//           propertyNotFoundError.extensions?.locationProfile;
-
-//         // Get struct_address from sessionStorage
-//         const structAddress = JSON.parse(
-//           sessionStorage.getItem("struct_address")
-//         );
-//         console.log("structAddress from sessionStorage:", structAddress);
-
-//         // Build blank agent data (basePayload) - Use structAddress if available
-//         const blankAgentData = {
-//           ...basePayload,
-//           streetAddress: structAddress
-//             ? `${structAddress.components.streetNumber} ${structAddress.components.street}`
-//             : addressData.streetAddress,
-//           city: structAddress?.components.city || addressData.city,
-//           state:
-//             transformStateToAbbrev(structAddress?.components.state) ||
-//             addressData.state, // Use transformed state
-//           zipCode: structAddress?.components.zip || addressData.zipCode,
-//           locationProfile: {
-//             isInPreferredZipCode:
-//               locationProfile?.isInPreferredZipCode || false,
-//             isInOperatedMSA: locationProfile?.isInOperatedMSA || false,
-//             isInOperatedState: locationProfile?.isInOperatedState || false,
-//             eligibilityCheck: "Failed",
-//           },
-//         };
-//         console.log("blankAgentData (propertyNotFoundError):", blankAgentData);
-
-//         // Remove loading spinner
-//         removeLoading("2"); // Proceed to Step 2 even on error
-
-//         // Set blank agent data to appState
-//         appState.propertyData = blankAgentData;
-
-//         setupFinalSubmission(); // Ensure Step 2 functionality is set up
-//         return; // Continue to Step 2
-//       }
-
-//       // Handle other errors
-//       removeLoading("2"); // Proceed to Step 2
-//       setupFinalSubmission(); // Ensure Step 2 functionality is set up
-//       return; // Continue to Step 2
-//     }
-
-//     // Now validate the address response structure
-//     if (!validateAddressResponse(data)) {
-//       removeLoading("2");
-//       sessionStorage.setItem(
-//         "agentData",
-//         JSON.stringify({ resp: data.data?.property })
-//       );
-
-//       setupFinalSubmission();
-//       return;
-//     }
-//     // If no property data, build blank agent data - Use structAddress if available
-//     if (!data?.data?.property) {
-//       // Get struct_address from sessionStorage
-//       const structAddress = JSON.parse(
-//         sessionStorage.getItem("struct_address")
-//       );
-//       console.log("structAddress from sessionStorage:", structAddress);
-
-//       // Build blank agent data (basePayload) - Use structAddress if available
-//       const blankAgentData = {
-//         ...basePayload,
-//         streetAddress: structAddress
-//           ? `${structAddress.components.streetNumber} ${structAddress.components.street}`
-//           : addressData.streetAddress,
-//         city: structAddress?.components.city || addressData.city,
-//         state:
-//           transformStateToAbbrev(structAddress?.components.state) ||
-//           addressData.state, // Use transformed state
-//         zipCode: structAddress?.components.zip || addressData.zipCode,
-//       };
-
-//       console.log("blankAgentData (no property data):", blankAgentData);
-
-//       removeLoading("2"); // Proceed to Step 2
-
-//       // Set blank agent data to appState
-//       appState.propertyData = blankAgentData;
-
-//       setupFinalSubmission(); // Ensure Step 2 functionality is set up
-//       return; // Continue to Step 2
-//     }
-
-//     appState.propertyData = data.data.property;
-
-//     // Proceed to Step 2
-//     removeLoading("2");
-//     setupFinalSubmission();
-
-//     const endTime = performance.now();
-//     logWithDetails("TIMING", "Address submission success", {
-//       elapsedMS: (endTime - startTime).toFixed(2),
-//     });
-//   } catch (error) {
-//     removeLoading("2"); // Proceed to Step 2 even on network error
-
-//     setupFinalSubmission(); // Ensure Step 2 functionality is set up
-//     const endTime = performance.now();
-//     logWithDetails("ERROR", "Error in address submission process", {
-//       message: error.message,
-//       stack: error.stack,
-//       name: error.name,
-//       elapsedMS: (endTime - startTime).toFixed(2),
-//     });
-//   }
-// }
-
 let finalSubmissionSetup = false; // Flag to track if setupFinalSubmission has been called
 
 async function handleAddressSubmission() {
@@ -1292,54 +1142,67 @@ function setupFinalSubmission() {
   if (!submitButton) return;
 
   // Remove existing event listeners before adding a new one
-  // submitButton.removeEventListener("click", handleSubmitClick);
-  // submitButton.addEventListener("click", handleSubmitClick);
-  // //
-  //
-  submitButton.addEventListener("click", (event) => {
+  // Clone the button to remove all existing event listeners
+  const newSubmitButton = submitButton.cloneNode(true);
+  submitButton.parentNode.replaceChild(newSubmitButton, submitButton);
+
+  newSubmitButton.addEventListener("click", async (event) => {
     event.preventDefault();
 
-    const legalCheckbox = document.querySelector("#legal-checkbox");
-    // Mark the checkbox as touched so that it will be validated
-    legalCheckbox.dataset.touched = true;
-
-    // Gather user data from Step 2
-    const formattedPhone = document.querySelector('[data-input="phone"]').value;
-    const unformattedPhone = formattedPhone.replace(/\D/g, "");
-    appState.userData = {
-      firstName: document
-        .querySelector('[data-input="first-name"]')
-        .value.trim(),
-      lastName: document.querySelector('[data-input="last-name"]').value.trim(),
-      email: document.querySelector('[data-input="email"]').value.trim(),
-      phone: unformattedPhone,
-      brokerage: document
-        .querySelector('[data-input="brokerage"]')
-        .value.trim(),
-    };
-
-    if (!validateFormInput("2")) {
-      // show popup here if you want
-      console.log("NOT VALID FORM INPUTS");
+    // Check if we've already successfully submitted
+    if (sessionStorage.getItem("formSubmitted") === "true") {
+      console.log("Form already submitted successfully, ignoring click");
       return;
     }
 
-    // Attempt final submission to the API
-    showLoading("2");
-    submitDataToAPI(appState.propertyData, appState.userData)
-      .then((res) => {
-        console.log("Lead submitted successfully:", res);
-        sessionStorage.setItem("responseData", JSON.stringify(res));
-        const queryParams = new URLSearchParams({
-          success: res.success,
-          leadId: res.leadId,
-        });
-        window.location.href = `/submit-agent-success?${queryParams.toString()}`;
-      })
-      .catch((err) => {
-        removeLoading("2");
-        console.log("Error submitting lead:", err);
+    try {
+      const legalCheckbox = document.querySelector("#legal-checkbox");
+      legalCheckbox.dataset.touched = true;
+
+      // Gather user data from Step 2
+      const formattedPhone = document.querySelector(
+        '[data-input="phone"]'
+      ).value;
+      const unformattedPhone = formattedPhone.replace(/\D/g, "");
+      appState.userData = {
+        firstName: document
+          .querySelector('[data-input="first-name"]')
+          .value.trim(),
+        lastName: document
+          .querySelector('[data-input="last-name"]')
+          .value.trim(),
+        email: document.querySelector('[data-input="email"]').value.trim(),
+        phone: unformattedPhone,
+        brokerage: document
+          .querySelector('[data-input="brokerage"]')
+          .value.trim(),
+      };
+
+      if (!validateFormInput("2")) {
+        console.log("NOT VALID FORM INPUTS");
+        return;
+      }
+
+      showLoading("2");
+      const res = await submitDataToAPI(
+        appState.propertyData,
+        appState.userData
+      );
+
+      // Mark as successfully submitted - this prevents any future submissions
+      sessionStorage.setItem("formSubmitted", "true");
+      console.log("Form submitted successfully, preventing future submissions");
+
+      sessionStorage.setItem("responseData", JSON.stringify(res));
+      const queryParams = new URLSearchParams({
+        success: res.success,
+        leadId: res.leadId,
       });
+      window.location.href = `/submit-agent-success?${queryParams.toString()}`;
+    } catch (err) {
+      removeLoading("2");
+      console.log("Error submitting lead:", err);
+    }
   });
 }
 
@@ -1373,7 +1236,8 @@ function validateAndBuildHomeProfile(propertyData) {
 
   // BEDS: Handle undefined propertyData.numOfBeds
   const bedValue = propertyData?.numOfBeds ?? ""; // Default to empty string if undefined
-  const bedPassed = (bedValue === 0) ? "Passed" : (bedValue >= 3 ? "Passed" : "Failed");
+  const bedPassed =
+    bedValue === 0 ? "Passed" : bedValue >= 3 ? "Passed" : "Failed";
   if (bedPassed === "Failed") allPassed = false;
   checks.push({
     id: "BEDS",
@@ -1383,7 +1247,8 @@ function validateAndBuildHomeProfile(propertyData) {
 
   // BATHS: Handle undefined propertyData.numOfBaths
   const bathValue = propertyData?.numOfBaths ?? ""; // Default to empty string if undefined
-  const bathPassed = (bathValue === 0) ? "Passed" : (bathValue >= 2 ? "Passed" : "Failed");
+  const bathPassed =
+    bathValue === 0 ? "Passed" : bathValue >= 2 ? "Passed" : "Failed";
   if (bathPassed === "Failed") allPassed = false;
   checks.push({
     id: "BATHS",
@@ -1397,8 +1262,6 @@ function validateAndBuildHomeProfile(propertyData) {
   // console.log("Type of ACRES Value:", typeof acreageValue);
 
   // const acreagePassed = acreageValue <= 0.5 ? "Passed" : "Failed";
-
-  // if (acreagePassed === "Failed") allPassed = false;
 
   // // Determine the value to submit
   // const finalAcreageValue = acreageValue > 0.5 ? "> .5" : "< .5";
@@ -1585,6 +1448,11 @@ function validateAndBuildHomeProfile(propertyData) {
 
 // The actual function that sends data to your final "submit" API
 async function submitDataToAPI(propertyData, userData) {
+  // Final safeguard: check if already submitted
+  if (sessionStorage.getItem("formSubmitted") === "true") {
+    console.log("Form already submitted, blocking API call");
+    throw new Error("Form already submitted successfully");
+  }
   const { allPassed, homeProfile } = validateAndBuildHomeProfile(propertyData);
 
   // Get struct_address from sessionStorage
@@ -1709,7 +1577,7 @@ function setupUserFormValidation() {
   const brokerageInput = document.querySelector('[data-input="brokerage"]');
   const legalCheckbox = document.querySelector("#legal-checkbox");
 
-  // If any of these don’t exist, skip
+  // If any of these don't exist, skip
   if (
     !firstNameInput ||
     !lastNameInput ||
