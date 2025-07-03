@@ -3365,6 +3365,14 @@ function formatPhoneNumber(phone) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Reset submission state if we're on the form page (not success page)
+  if (!window.location.pathname.includes("submit-home-submitted")) {
+    sessionStorage.removeItem("formSubmitted");
+  } else {
+    // If we're on the success page, mark as submitted
+    sessionStorage.setItem("formSubmitted", "true");
+  }
+
   const triggerButton = document.querySelector('[data-alt="submit"]');
 
   if (triggerButton) {
@@ -3538,6 +3546,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function submitFinal() {
+  // Check if we've already successfully submitted
+  if (sessionStorage.getItem("formSubmitted") === "true") {
+    console.log("Form already submitted successfully, ignoring click");
+    return;
+  }
+
   if (!validateFormInput("5")) {
     return;
   }
@@ -3584,6 +3598,10 @@ async function submitFinal() {
 
     const apiResponse = await submitDataToAPI();
 
+    // Mark as successfully submitted - this prevents any future submissions
+    sessionStorage.setItem("formSubmitted", "true");
+    console.log("Form submitted successfully, preventing future submissions");
+
     // Store the API response in sessionStorage
     sessionStorage.setItem("responseData", JSON.stringify(apiResponse));
     sessionStorage.removeItem("basePayload");
@@ -3628,6 +3646,12 @@ async function submitFinal() {
 /// bonus https://vpqqjszp06.execute-api.us-west-1.amazonaws.com/prod/submitHomeownerWebsiteLead
 /// shane https://prr3s34b9e.execute-api.us-east-2.amazonaws.com/bonussubmitlead
 async function submitDataToAPI() {
+  // Final safeguard: check if already submitted
+  if (sessionStorage.getItem("formSubmitted") === "true") {
+    console.log("Form already submitted, blocking API call");
+    throw new Error("Form already submitted successfully");
+  }
+
   try {
     console.log(
       "Final Payload being sent to the API:",
@@ -3684,6 +3708,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function submitFinalConsent() {
+  // Check if we've already successfully submitted
+  if (sessionStorage.getItem("formSubmitted") === "true") {
+    console.log("Form already submitted successfully, ignoring click");
+    return;
+  }
+
   const input = document.querySelector('[data-input="share-consent"]');
   const answer = input.querySelector("[data-select].is-valid");
 
@@ -3722,6 +3752,10 @@ async function submitFinalConsent() {
 
   try {
     const apiResponse = await submitDataToAPI();
+
+    // Mark as successfully submitted - this prevents any future submissions
+    sessionStorage.setItem("formSubmitted", "true");
+    console.log("Form submitted successfully, preventing future submissions");
 
     return apiResponse;
   } catch (error) {
