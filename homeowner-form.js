@@ -1998,7 +1998,9 @@ function checkInputsValidity() {
       return (
         input.classList.contains("is-valid") &&
         input.value &&
-        input.value.trim() !== ""
+        input.value.trim() !== "" &&
+        input.value !== "Select one..." &&
+        input.value !== "Select One..."
       );
     }
     // For all other inputs, simply check that the "is-valid" class is present.
