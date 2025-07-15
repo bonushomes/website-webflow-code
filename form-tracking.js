@@ -8,6 +8,13 @@
 
   // Simple event push function
   function pushGTMEvent(eventName, data = {}) {
+    console.log(
+      "🔍 pushGTMEvent called:",
+      eventName,
+      "on domain:",
+      window.location.hostname
+    );
+
     // Block GTM events on staging domain
     if (window.location.hostname === "bonus-homes.webflow.io") {
       console.log("❌ GTM event blocked - on staging domain");
@@ -20,6 +27,7 @@
       ...data,
     };
 
+    console.log("✅ Pushing GTM event:", eventData);
     window.dataLayer.push(eventData);
 
     // Store for debugging
