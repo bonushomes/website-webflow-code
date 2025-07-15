@@ -1,15 +1,19 @@
 (function () {
   "use strict";
 
+  console.log("🚀 form-tracking.js loaded");
+
   // Initialize dataLayer if it doesn't exist
   window.dataLayer = window.dataLayer || [];
 
   // Simple event push function
   function pushGTMEvent(eventName, data = {}) {
-    if (window.location.hostname !== "bonushomes.com") {
-      // Only send GTM events on production
+    // Block GTM events on staging domain
+    if (window.location.hostname === "bonus-homes.webflow.io") {
+      console.log("❌ GTM event blocked - on staging domain");
       return;
     }
+
     const eventData = {
       event: eventName,
       timestamp: new Date().toISOString(),
@@ -121,20 +125,29 @@
   }
 
   function initTracking() {
+    console.log("🔍 initTracking called");
     const currentPath = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
     const currentStep = urlParams.get("step");
 
+    console.log("🔍 Current path:", currentPath, "Step:", currentStep);
+
     if (currentPath === "/form-agent" || currentPath.includes("/form-agent")) {
+      console.log("🔍 Setting up agent form tracking");
       pushGTMEvent("AgentForm_Qualify_Init");
       setupAgentFormSubmitListener();
     } else if (
       currentPath === "/form" ||
       (currentPath.includes("/form") && !currentPath.includes("/form-agent"))
     ) {
+      console.log("🔍 Setting up homeowner form tracking");
       if (currentStep === "2") {
+        console.log(
+          "🔍 On step 2 - should fire HomeownerForm_HomeDetails_Init"
+        );
         pushGTMEvent("HomeownerForm_HomeDetails_Init");
       } else {
+        console.log("🔍 On step 1 - should fire HomeownerForm_Qualify_Init");
         // Default to step 1 if no step parameter or step=1
         pushGTMEvent("HomeownerForm_Qualify_Init");
       }
