@@ -621,6 +621,18 @@ function validateAndBuildHomeProfile(propertyData) {
 async function submitDataToAPI(propertyData, userData) {
   const { allPassed, homeProfile } = validateAndBuildHomeProfile(propertyData);
 
+  // Get UTM parameters
+  const utmParams =
+    typeof window.getUtmParams === "function"
+      ? window.getUtmParams()
+      : {
+          source: "",
+          medium: "",
+          keyword: "",
+          content: "",
+          campaign: "",
+        };
+
   const payload = {
     streetAddress: propertyData.streetAddress,
     city: propertyData.city,
@@ -643,6 +655,7 @@ async function submitDataToAPI(propertyData, userData) {
       eligibilityCheck: "Failed",
     },
     homeProfile,
+    utmParams,
   };
 
   // If any check fails, set isQualified false + reason

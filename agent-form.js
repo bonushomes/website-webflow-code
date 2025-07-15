@@ -1483,6 +1483,18 @@ async function submitDataToAPI(propertyData, userData) {
     return "NONE";
   }
 
+  // Get UTM parameters
+  const utmParams =
+    typeof window.getUtmParams === "function"
+      ? window.getUtmParams()
+      : {
+          source: "",
+          medium: "",
+          keyword: "",
+          content: "",
+          campaign: "",
+        };
+
   const payload = {
     streetAddress: propertyData.streetAddress, // Still use streetAddress from propertyData if available
     city: structAddress
@@ -1514,6 +1526,7 @@ async function submitDataToAPI(propertyData, userData) {
       ),
     },
     homeProfile,
+    utmParams,
   };
 
   // If any check fails, set isQualified to false and add reasonUnqualified

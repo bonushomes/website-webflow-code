@@ -376,6 +376,18 @@ async function submitDataToAPI(data, userData) {
     ""
   );
 
+  // Get UTM parameters
+  const utmParams =
+    typeof window.getUtmParams === "function"
+      ? window.getUtmParams()
+      : {
+          source: "",
+          medium: "",
+          keyword: "",
+          content: "",
+          campaign: "",
+        };
+
   const finalPayload = {
     ...data,
     contactInfo: {
@@ -387,6 +399,7 @@ async function submitDataToAPI(data, userData) {
       bonusDiscoverySource: sanitizedDiscovery,
     },
     reasonUnqualified: "FailedLocationCheck",
+    utmParams,
   };
 
   try {

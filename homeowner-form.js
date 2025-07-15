@@ -3652,10 +3652,28 @@ async function submitDataToAPI() {
     throw new Error("Form already submitted successfully");
   }
 
+  // Get UTM parameters
+  const utmParams =
+    typeof window.getUtmParams === "function"
+      ? window.getUtmParams()
+      : {
+          source: "",
+          medium: "",
+          keyword: "",
+          content: "",
+          campaign: "",
+        };
+
+  // Add UTM parameters to basePayload
+  const payloadWithUtm = {
+    ...basePayload,
+    utmParams,
+  };
+
   try {
     console.log(
       "Final Payload being sent to the API:",
-      JSON.stringify(basePayload, null, 2)
+      JSON.stringify(payloadWithUtm, null, 2)
     );
 
     console.log("Starting API submission...");
@@ -3668,7 +3686,7 @@ async function submitDataToAPI() {
           "Content-Type": "application/json",
         },
 
-        body: JSON.stringify(basePayload),
+        body: JSON.stringify(payloadWithUtm),
       }
     );
 

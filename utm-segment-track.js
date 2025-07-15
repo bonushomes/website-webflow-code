@@ -7,7 +7,13 @@
   // 1. UTM Retrieval Function
   function getUtms() {
     const utms = {};
-    ["utm_source", "utm_medium", "utm_campaign"].forEach((key) => {
+    [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_keyword",
+      "utm_content",
+    ].forEach((key) => {
       const value = localStorage.getItem(key);
       if (value) {
         utms[key] = value;
@@ -16,11 +22,29 @@
     return utms;
   }
 
+  // 1.5. UTM Parameters for API Payloads
+  function getUtmParams() {
+    const utms = getUtms();
+    return {
+      source: utms.utm_source || "",
+      medium: utms.utm_medium || "",
+      keyword: utms.utm_keyword || "",
+      content: utms.utm_content || "",
+      campaign: utms.utm_campaign || "",
+    };
+  }
+
   // 2. UTM Capture and Storage (runs on every page load)
   function saveUtms() {
     const params = new URLSearchParams(window.location.search);
 
-    ["utm_source", "utm_medium", "utm_campaign"].forEach((key) => {
+    [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_keyword",
+      "utm_content",
+    ].forEach((key) => {
       const value = params.get(key);
       if (value) {
         localStorage.setItem(key, value);
@@ -300,6 +324,10 @@
   window.checkUtms = function () {
     console.log("Current UTMs:", getUtms());
     return getUtms();
+  };
+
+  window.getUtmParams = function () {
+    return getUtmParams();
   };
 
   window.checkSavedAddress = function () {
