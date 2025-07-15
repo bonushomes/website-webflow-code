@@ -1993,6 +1993,14 @@ function checkInputsValidity() {
       const numericValue = parseFloat(cleanedValue);
       return input.classList.contains("is-valid") && numericValue > 0;
     }
+    // For the 30-year-fixed field, ensure it has a valid selection
+    if (input.getAttribute("data-input") === "30-year-fixed") {
+      return (
+        input.classList.contains("is-valid") &&
+        input.value &&
+        input.value.trim() !== ""
+      );
+    }
     // For all other inputs, simply check that the "is-valid" class is present.
     return input.classList.contains("is-valid");
   });
