@@ -2178,11 +2178,11 @@ function submitHomeData() {
   );
   updateHomeProfileValues(
     "MORTGAGE_TERM",
-    formData.isThirtyYearFixed == "Yes" ? "30 years" : ""
+    formData.isThirtyYearFixed == "Yes" ? "30 years" : "Not 30 Year"
   );
   updateHomeProfileValues(
     "MORTGAGE_LOAN_TYPE",
-    formData.isThirtyYearFixed == "Yes" ? "Fixed" : ""
+    formData.isThirtyYearFixed == "Yes" ? "Fixed" : "Not Fixed"
   );
   updateHomeProfileValues("ESTIMATED_VALUE", formData.estimated_value);
 
@@ -2191,7 +2191,8 @@ function submitHomeData() {
     basePayload.isQualified = false;
     basePayload.reasonUnqualified = "FailedFeaturesCheck";
     sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
-    // Instead of redirecting, proceed to the next step
+
+    // Only proceed to next step if failures are non-critical
     const currentStep = document.querySelector('[data-step="2"]');
     const nextStep = document.querySelector('[data-step="3"]');
     if (currentStep && nextStep) {
