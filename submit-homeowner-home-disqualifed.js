@@ -406,12 +406,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Function to handle the submission of data to the API using a standard JSON payload
 async function submitDataToAPI(data, userData) {
-  // Final safeguard: check if already submitted
-  if (sessionStorage.getItem("formSubmitted") === "true") {
-    console.log("Form already submitted, blocking API call");
-    throw new Error("Form already submitted successfully");
-  }
-
   console.log("basePayload", data);
   console.log("submitDataToAPI called with:", { data, userData });
 

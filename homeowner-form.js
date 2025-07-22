@@ -3666,12 +3666,6 @@ async function submitFinal() {
 /// bonus https://vpqqjszp06.execute-api.us-west-1.amazonaws.com/prod/submitHomeownerWebsiteLead
 /// shane https://prr3s34b9e.execute-api.us-east-2.amazonaws.com/bonussubmitlead
 async function submitDataToAPI() {
-  // Final safeguard: check if already submitted
-  if (sessionStorage.getItem("formSubmitted") === "true") {
-    console.log("Form already submitted, blocking API call");
-    throw new Error("Form already submitted successfully");
-  }
-
   // Get UTM parameters
   const utmParams =
     typeof window.getUtmParams === "function"

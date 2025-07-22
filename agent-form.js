@@ -1455,11 +1455,6 @@ function validateAndBuildHomeProfile(propertyData) {
 
 // The actual function that sends data to your final "submit" API
 async function submitDataToAPI(propertyData, userData) {
-  // Final safeguard: check if already submitted
-  if (sessionStorage.getItem("formSubmitted") === "true") {
-    console.log("Form already submitted, blocking API call");
-    throw new Error("Form already submitted successfully");
-  }
   const { allPassed, homeProfile } = validateAndBuildHomeProfile(propertyData);
 
   // Get struct_address from sessionStorage

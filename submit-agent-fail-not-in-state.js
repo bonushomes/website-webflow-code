@@ -638,12 +638,6 @@ function validateAndBuildHomeProfile(propertyData) {
 
 // The final submission function, same as in first code, but used here
 async function submitDataToAPI(propertyData, userData) {
-  // Final safeguard: check if already submitted
-  if (sessionStorage.getItem("formSubmitted") === "true") {
-    console.log("Form already submitted, blocking API call");
-    throw new Error("Form already submitted successfully");
-  }
-
   const { allPassed, homeProfile } = validateAndBuildHomeProfile(propertyData);
 
   // Get UTM parameters

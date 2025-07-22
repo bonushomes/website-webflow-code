@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Reset submission state for this page - allow new submissions
   sessionStorage.removeItem("formSubmitted");
-  console.log("🔧 RESET: formSubmitted flag removed on page load");
 
   // Hide all steps except the first one
   var steps = document.querySelectorAll("[data-step]");
@@ -318,13 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
     event.preventDefault();
 
     // Check if we've already successfully submitted
-    const formSubmitted = sessionStorage.getItem("formSubmitted");
-    console.log(
-      "🔍 DEBUG: Submit button clicked, formSubmitted flag value:",
-      formSubmitted
-    );
-
-    if (formSubmitted === "true") {
+    if (sessionStorage.getItem("formSubmitted") === "true") {
       console.log("Form already submitted successfully, ignoring click");
       return;
     }
@@ -339,7 +332,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Set flag IMMEDIATELY to prevent race conditions and duplicate submissions
     sessionStorage.setItem("formSubmitted", "true");
-    console.log("🔧 SET: formSubmitted flag set to 'true'");
     console.log("Form submission started, preventing future submissions");
 
     // showLoadingStep();
@@ -395,15 +387,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Function to handle the submission of data to the API using a standard JSON payload
 async function submitDataToAPI(data, userData) {
-  // Final safeguard: check if already submitted
-  const formSubmitted = sessionStorage.getItem("formSubmitted");
-  console.log("🔍 DEBUG: formSubmitted flag value:", formSubmitted);
-
-  if (formSubmitted === "true") {
-    console.log("Form already submitted, blocking API call");
-    throw new Error("Form already submitted successfully");
-  }
-
   console.log("basePayload", data);
 
   const sanitizedDiscovery = userData.bonusDiscoverySource.replace(
