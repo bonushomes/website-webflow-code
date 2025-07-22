@@ -331,6 +331,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // submit
   submitButton.addEventListener("click", function (event) {
     event.preventDefault();
+
+    // Check if we've already successfully submitted
+    if (sessionStorage.getItem("formSubmitted") === "true") {
+      console.log("Form already submitted successfully, ignoring click");
+      return;
+    }
+
     if (!validateFormInput()) {
       return;
     }
@@ -338,6 +345,11 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Checkbox is not checked.");
       return;
     }
+
+    // Set flag IMMEDIATELY to prevent race conditions and duplicate submissions
+    sessionStorage.setItem("formSubmitted", "true");
+    console.log("Form submission started, preventing future submissions");
+
     // showLoadingStep();
     showSubmitSuccess();
 
@@ -371,13 +383,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     submitDataToAPI(homeDataObject, userData)
       .then((res) => {
+        console.log("Form submitted successfully, keeping submission flag set");
         const url = new URL(window.location);
         url.searchParams.set("submit-success", "true");
         window.history.replaceState({}, "", url);
       })
       .catch((err) => {
-        // removeLoading("2");
+        // Reset flag on error so user can retry
+        sessionStorage.removeItem("formSubmitted");
         console.log("Error submitting lead:", err);
+        console.log("Form submission failed, allowing retry");
       });
   });
 });
@@ -388,6 +403,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Function to handle the submission of data to the API using a standard JSON payload
 async function submitDataToAPI(data, userData) {
+  // Final safeguard: check if already submitted
+  if (sessionStorage.getItem("formSubmitted") === "true") {
+    console.log("Form already submitted, blocking API call");
+    throw new Error("Form already submitted successfully");
+  }
+
   console.log("basePayload", data);
   console.log("submitDataToAPI called with:", { data, userData });
 

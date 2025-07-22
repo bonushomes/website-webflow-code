@@ -386,6 +386,12 @@ function setupUserFormValidation() {
     submitButton.addEventListener("click", function (event) {
       event.preventDefault(); // Just in case
 
+      // Check if we've already successfully submitted
+      if (sessionStorage.getItem("formSubmitted") === "true") {
+        console.log("Form already submitted successfully, ignoring click");
+        return;
+      }
+
       // if (legalCheckbox && !legalCheckbox.checked) {
       //   console.log("Legal Checkbox is not checked. Cannot submit.");
       //   return;
@@ -418,6 +424,10 @@ function setupUserFormValidation() {
         console.log("Validation failed. Please check your inputs.");
         return;
       }
+
+      // Set flag IMMEDIATELY to prevent race conditions and duplicate submissions
+      sessionStorage.setItem("formSubmitted", "true");
+      console.log("Form submission started, preventing future submissions");
 
       // 1) Show loading screen
       showLoadingStep();
@@ -464,11 +474,17 @@ function setupUserFormValidation() {
       submitDataToAPI(appState.propertyData, appState.userData)
         .then((res) => {
           console.log("Lead submitted successfully:", res);
+          console.log(
+            "Form submitted successfully, keeping submission flag set"
+          );
           // Show success step
           showSubmitSuccess();
         })
         .catch((err) => {
+          // Reset flag on error so user can retry
+          sessionStorage.removeItem("formSubmitted");
           console.log("Error submitting lead:", err);
+          console.log("Form submission failed, allowing retry");
           // If you want to revert or show an error screen, do so
         });
     });
@@ -619,6 +635,12 @@ function validateAndBuildHomeProfile(propertyData) {
 
 // The final submission function, same as in first code, but used here
 async function submitDataToAPI(propertyData, userData) {
+  // Final safeguard: check if already submitted
+  if (sessionStorage.getItem("formSubmitted") === "true") {
+    console.log("Form already submitted, blocking API call");
+    throw new Error("Form already submitted successfully");
+  }
+
   const { allPassed, homeProfile } = validateAndBuildHomeProfile(propertyData);
 
   // Get UTM parameters
