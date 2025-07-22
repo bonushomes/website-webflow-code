@@ -3563,41 +3563,48 @@ async function submitFinal() {
     return;
   }
 
-  if (!validateFormInput("5")) {
-    return;
-  }
-
-  const step4Data = JSON.parse(sessionStorage.getItem("step4DataPass"));
-  const userData = {
-    firstName: document.querySelector('[data-input="first-name"]').value,
-    lastName: document.querySelector('[data-input="last-name"]').value,
-    email: document.querySelector('[data-input="email"]').value,
-    phone: document.querySelector('[data-input="phone"]').value,
-    bonusDiscoverySource: document.querySelector(
-      '[data-input="discovery-source"]'
-    ).value,
-  };
-
-  const mortgagePITIPass = step4Data.mortgage_piti_validation_passed;
-
-  basePayload.contactInfo.firstName = userData.firstName;
-  basePayload.contactInfo.lastName = userData.lastName;
-  basePayload.contactInfo.email = userData.email;
-  basePayload.contactInfo.phoneNumber = userData.phone.replace(/\D/g, "");
-  basePayload.contactInfo.bonusDiscoverySource =
-    userData.bonusDiscoverySource.replace(/[^a-zA-Z]/g, "");
-  basePayload.isQualified = mortgagePITIPass;
-
-  // Check if any homeProfile item is 'Failed' before final submission
-  const anyFailed = basePayload.homeProfile.some(
-    (item) => item.eligibilityCheck === "Failed"
-  );
-  if (anyFailed) {
-    basePayload.isQualified = false;
-    basePayload.reasonUnqualified = "FailedFeaturesCheck";
-  }
+  // Set flag IMMEDIATELY to prevent race conditions and duplicate submissions
+  sessionStorage.setItem("formSubmitted", "true");
+  console.log("Form submission started, preventing future submissions");
 
   try {
+    if (!validateFormInput("5")) {
+      // Reset flag if validation fails so user can retry
+      sessionStorage.removeItem("formSubmitted");
+      console.log("Form validation failed, allowing retry");
+      return;
+    }
+
+    const step4Data = JSON.parse(sessionStorage.getItem("step4DataPass"));
+    const userData = {
+      firstName: document.querySelector('[data-input="first-name"]').value,
+      lastName: document.querySelector('[data-input="last-name"]').value,
+      email: document.querySelector('[data-input="email"]').value,
+      phone: document.querySelector('[data-input="phone"]').value,
+      bonusDiscoverySource: document.querySelector(
+        '[data-input="discovery-source"]'
+      ).value,
+    };
+
+    const mortgagePITIPass = step4Data.mortgage_piti_validation_passed;
+
+    basePayload.contactInfo.firstName = userData.firstName;
+    basePayload.contactInfo.lastName = userData.lastName;
+    basePayload.contactInfo.email = userData.email;
+    basePayload.contactInfo.phoneNumber = userData.phone.replace(/\D/g, "");
+    basePayload.contactInfo.bonusDiscoverySource =
+      userData.bonusDiscoverySource.replace(/[^a-zA-Z]/g, "");
+    basePayload.isQualified = mortgagePITIPass;
+
+    // Check if any homeProfile item is 'Failed' before final submission
+    const anyFailed = basePayload.homeProfile.some(
+      (item) => item.eligibilityCheck === "Failed"
+    );
+    if (anyFailed) {
+      basePayload.isQualified = false;
+      basePayload.reasonUnqualified = "FailedFeaturesCheck";
+    }
+
     // ALWAYS make the API call regardless of qualification
     showLoading("5");
 
@@ -3609,9 +3616,7 @@ async function submitFinal() {
 
     const apiResponse = await submitDataToAPI();
 
-    // Mark as successfully submitted - this prevents any future submissions
-    sessionStorage.setItem("formSubmitted", "true");
-    console.log("Form submitted successfully, preventing future submissions");
+    console.log("Form submitted successfully, keeping submission flag set");
 
     // Store the API response in sessionStorage
     sessionStorage.setItem("responseData", JSON.stringify(apiResponse));
@@ -3635,7 +3640,11 @@ async function submitFinal() {
 
     return apiResponse;
   } catch (error) {
+    // Reset flag on error so user can retry
+    sessionStorage.removeItem("formSubmitted");
     console.error("Submission error:", error);
+    console.log("Form submission failed, allowing retry");
+
     // Even if there's an error, we should still redirect appropriately
     if (basePayload.isQualified) {
       window.location.href = "/submit-home-submitted";

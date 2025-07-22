@@ -1155,6 +1155,10 @@ function setupFinalSubmission() {
       return;
     }
 
+    // Set flag IMMEDIATELY to prevent race conditions and duplicate submissions
+    sessionStorage.setItem("formSubmitted", "true");
+    console.log("Form submission started, preventing future submissions");
+
     try {
       const legalCheckbox = document.querySelector("#legal-checkbox");
       legalCheckbox.dataset.touched = true;
@@ -1179,7 +1183,9 @@ function setupFinalSubmission() {
       };
 
       if (!validateFormInput("2")) {
-        console.log("NOT VALID FORM INPUTS");
+        // Reset flag if validation fails so user can retry
+        sessionStorage.removeItem("formSubmitted");
+        console.log("Form validation failed, allowing retry");
         return;
       }
 
@@ -1189,9 +1195,7 @@ function setupFinalSubmission() {
         appState.userData
       );
 
-      // Mark as successfully submitted - this prevents any future submissions
-      sessionStorage.setItem("formSubmitted", "true");
-      console.log("Form submitted successfully, preventing future submissions");
+      console.log("Form submitted successfully, keeping submission flag set");
 
       sessionStorage.setItem("responseData", JSON.stringify(res));
       const queryParams = new URLSearchParams({
@@ -1200,8 +1204,11 @@ function setupFinalSubmission() {
       });
       window.location.href = `/submit-agent-success?${queryParams.toString()}`;
     } catch (err) {
+      // Reset flag on error so user can retry
+      sessionStorage.removeItem("formSubmitted");
       removeLoading("2");
       console.log("Error submitting lead:", err);
+      console.log("Form submission failed, allowing retry");
     }
   });
 }
