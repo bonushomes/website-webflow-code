@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Reset submission state for this page - allow new submissions
+  sessionStorage.removeItem("formSubmitted");
+
   // Hide all steps except the first one
   var steps = document.querySelectorAll("[data-step]");
   steps.forEach(function (step) {

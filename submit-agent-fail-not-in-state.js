@@ -29,6 +29,9 @@ function showSubmitSuccess() {
 
 // Example code for how you might hide all steps except the form
 document.addEventListener("DOMContentLoaded", function () {
+  // Reset submission state for this page - allow new submissions
+  sessionStorage.removeItem("formSubmitted");
+
   const steps = document.querySelectorAll("[data-step]");
   steps.forEach((step) => {
     // Show only the form step initially; hide others
