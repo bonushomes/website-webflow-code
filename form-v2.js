@@ -800,18 +800,47 @@
       rate.value = display ? `${display}%` : "";
     }
     if (rate) {
-      rate.addEventListener("input", formatRateInput);
-      rate.addEventListener("blur", formatRateInput);
-      rate.addEventListener("paste", (e) => {
-        setTimeout(formatRateInput, 0);
+      rate.addEventListener("input", () => {
+        formatRateInput();
+        // Only adjust this field's invalid marker
+        const isUnknown = !!unknown?.checked;
+        const val = String(rate.value || "").replace(/%/g, "");
+        const ok =
+          isUnknown ||
+          (!!val && !Number.isNaN(parseFloat(val)) && parseFloat(val) < 10);
+        rate.classList.toggle("is-invalid", !ok && !isUnknown && val !== "");
+        rate.classList.toggle("is-valid", ok && !isUnknown);
       });
-      // live validity toggle
-      rate.addEventListener("input", validateStep2Inputs);
-      rate.addEventListener("change", validateStep2Inputs);
+      rate.addEventListener("blur", formatRateInput);
+      rate.addEventListener("paste", () => setTimeout(formatRateInput, 0));
     }
-    if (hv) hv.addEventListener("change", validateStep2Inputs);
-    if (move) move.addEventListener("change", validateStep2Inputs);
-    if (unknown) unknown.addEventListener("change", validateStep2Inputs);
+    if (hv) {
+      hv.addEventListener("change", () => {
+        const ok = !!hv.value && !/Select/i.test(hv.value);
+        if (ok) {
+          hv.classList.remove("is-invalid");
+          hv.classList.add("is-valid");
+        }
+      });
+    }
+    if (move) {
+      move.addEventListener("change", () => {
+        const ok = !!move.value && !/Select/i.test(move.value);
+        if (ok) {
+          move.classList.remove("is-invalid");
+          move.classList.add("is-valid");
+        }
+      });
+    }
+    if (unknown) {
+      unknown.addEventListener("change", () => {
+        applyUnknownState();
+        if (unknown.checked && rate) {
+          rate.classList.remove("is-invalid");
+          rate.classList.remove("is-valid");
+        }
+      });
+    }
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       if (!validateStep2Inputs()) {
@@ -844,19 +873,103 @@
     const consent = qs(SELECTORS.legalConsent);
     const brokerage = qs(SELECTORS.brokerage);
 
-    const revalidate = () => validateStep3Inputs();
-    [first, last, email, source, brokerage].forEach((el) => {
-      if (!el) return;
-      el.addEventListener("input", revalidate);
-      el.addEventListener("change", revalidate);
-      el.addEventListener("blur", revalidate);
-    });
-    if (phone) {
-      phone.addEventListener("input", revalidate);
-      phone.addEventListener("blur", revalidate);
+    if (first) {
+      const fn = () => {
+        const ok = !!first.value.trim();
+        if (ok) {
+          first.classList.remove("is-invalid");
+          first.classList.add("is-valid");
+        }
+      };
+      first.addEventListener("input", fn);
+      first.addEventListener("blur", fn);
     }
-    if (who) who.addEventListener("change", revalidate);
-    if (consent) consent.addEventListener("change", revalidate);
+    if (last) {
+      const fn = () => {
+        const ok = !!last.value.trim();
+        if (ok) {
+          last.classList.remove("is-invalid");
+          last.classList.add("is-valid");
+        }
+      };
+      last.addEventListener("input", fn);
+      last.addEventListener("blur", fn);
+    }
+    if (email) {
+      const fn = () => {
+        const ok =
+          !!email.value.trim() &&
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
+        if (ok) {
+          email.classList.remove("is-invalid");
+          email.classList.add("is-valid");
+        }
+      };
+      email.addEventListener("input", fn);
+      email.addEventListener("blur", fn);
+    }
+    if (phone) {
+      const fn = () => {
+        const ok =
+          !!phone.value && phone.value.replace(/\D/g, "").length === 10;
+        if (ok) {
+          phone.classList.remove("is-invalid");
+          phone.classList.add("is-valid");
+        }
+      };
+      phone.addEventListener("input", fn);
+      phone.addEventListener("blur", fn);
+    }
+    if (who) {
+      const fn = () => {
+        const ok = !!who.value && !/Select/i.test(who.value);
+        if (ok) {
+          who.classList.remove("is-invalid");
+          who.classList.add("is-valid");
+        }
+        // recheck brokerage when switching agent/homeowner
+        if (brokerage) {
+          const isAgent = /agent/i.test(String(who.value || ""));
+          const okB = !isAgent || !!brokerage.value.trim();
+          brokerage.classList.toggle("is-invalid", !okB);
+          if (okB && isAgent) brokerage.classList.add("is-valid");
+        }
+      };
+      who.addEventListener("change", fn);
+    }
+    if (brokerage) {
+      const fn = () => {
+        const isAgent = who && /agent/i.test(String(who.value || ""));
+        if (!isAgent) {
+          brokerage.classList.remove("is-invalid");
+          brokerage.classList.remove("is-valid");
+          return;
+        }
+        const ok = !!brokerage.value.trim();
+        brokerage.classList.toggle("is-invalid", !ok);
+        if (ok) brokerage.classList.add("is-valid");
+      };
+      brokerage.addEventListener("input", fn);
+      brokerage.addEventListener("blur", fn);
+    }
+    if (source) {
+      const fn = () => {
+        const ok = !!source.value && !/Select/i.test(source.value);
+        if (ok) {
+          source.classList.remove("is-invalid");
+          source.classList.add("is-valid");
+        }
+      };
+      source.addEventListener("change", fn);
+    }
+    if (consent) {
+      const fn = () => {
+        const ok = !!consent.checked;
+        consent.classList.toggle("is-invalid", !ok);
+        consent.classList.toggle("is-valid", ok);
+      };
+      consent.addEventListener("change", fn);
+    }
   }
 
   function wireAgentOrHomeownerTracking() {
@@ -941,8 +1054,12 @@
     // Format on input
     phoneInput.addEventListener("input", () => {
       handlePhoneInputFormat(phoneInput);
-      // live validity toggle
-      validateStep3Inputs();
+      // live validity toggle for phone only
+      const ok = phoneInput.value.replace(/\D/g, "").length === 10;
+      if (ok) {
+        phoneInput.classList.remove("is-invalid");
+        phoneInput.classList.add("is-valid");
+      }
     });
     // Restrict max 10 digits
     phoneInput.addEventListener("keydown", (event) => {
