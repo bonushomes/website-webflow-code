@@ -202,38 +202,9 @@
 
   function prefillStep2FromPropertyResponse(property) {
     try {
-      // Home value range
+      // Do not prefill estimated home value range; keep default placeholder selected
       const homeValueSelect = qs(SELECTORS.homeValueEst);
-      if (homeValueSelect && property?.valueEstimates?.[0]?.estimate) {
-        const estimate = parseInt(property.valueEstimates[0].estimate, 10);
-        const ranges = [
-          [200000, 250000],
-          [250000, 300000],
-          [300000, 350000],
-          [350000, 400000],
-          [400000, 450000],
-          [450000, 500000],
-          [500000, 550000],
-          [550000, 600000],
-          [600000, 650000],
-        ];
-        let label = "";
-        for (const [min, max] of ranges) {
-          if (estimate >= min && estimate < max) {
-            label =
-              max === 650000
-                ? "$650,000+"
-                : `$${min / 1000},000 - $${max / 1000},000`;
-            break;
-          }
-        }
-        if (!label)
-          label = estimate >= 650000 ? "$650,000+" : "$200,000 - $250,000";
-        const opt = Array.from(homeValueSelect.options).find(
-          (o) => o.text.trim() === label
-        );
-        if (opt) homeValueSelect.value = opt.value;
-      }
+      if (homeValueSelect) homeValueSelect.selectedIndex = 0;
 
       // Do not prefill estimated interest rate; keep it empty for user input
       const estRateEl = qs(SELECTORS.estimatedInterestRate);
