@@ -212,6 +212,22 @@
     } catch (_) {}
   }
 
+  function resetStep2Defaults() {
+    const hv = qs(SELECTORS.homeValueEst);
+    const rate = qs(SELECTORS.estimatedInterestRate);
+    const unknown = qs(SELECTORS.unknownInterest);
+    if (hv) {
+      hv.selectedIndex = 0;
+      hv.classList.remove("is-valid", "is-invalid");
+    }
+    if (rate) {
+      if (!unknown?.checked) {
+        rate.value = "";
+      }
+      rate.classList.remove("is-valid", "is-invalid");
+    }
+  }
+
   function buildBasePayload() {
     return {
       streetAddress: "",
@@ -323,6 +339,8 @@
       if (property) prefillStep2FromPropertyResponse(property);
 
       hideLoadingTo(SELECTORS.step2);
+      // Force defaults after step becomes visible to avoid other scripts/auto-fill
+      resetStep2Defaults();
       return { ok: true, eligible: !!eligible, property };
     } catch (err) {
       console.error("Address validation error", err);
@@ -769,18 +787,19 @@
       unknown.addEventListener("change", applyUnknownState);
       applyUnknownState();
     }
-    // Auto-format percent: treat raw digits, insert decimal automatically
+    // Auto-format percent during editing (no % while typing)
     // Rules:
     // - digits only; ignore non-digits
-    // - length 1 => D        -> D%
-    // - length 2 => D D      -> D.D%
-    // - length >=3 => D D D* -> D.DD% (truncate extra)
+    // - length 1 => D
+    // - length 2 => D.D
+    // - length >=3 => D.DD (truncate extra)
     // - cap < 10; mark invalid if >= 10
-    // - append trailing % always (if any digits)
-    function formatRateInput() {
+    // - Append trailing % only on blur
+    function formatRateInput(showPercentOnOutput = false) {
       if (!rate || rate.disabled) return;
       const isUnknown = !!unknown?.checked;
       const digits = String(rate.value || "")
+        .replace(/%/g, "")
         .replace(/\D/g, "")
         .slice(0, 3);
       let display = "";
@@ -797,11 +816,24 @@
       const ok = !isUnknown && display !== "" && !Number.isNaN(num) && num < 10;
       rate.classList.toggle("is-invalid", !ok && !isUnknown && display !== "");
       rate.classList.toggle("is-valid", ok);
-      rate.value = display ? `${display}%` : "";
+      rate.value = display
+        ? showPercentOnOutput
+          ? `${display}%`
+          : display
+        : "";
     }
     if (rate) {
+      // hint percent via placeholder when empty
+      try {
+        rate.placeholder = "%";
+      } catch (_) {}
+      rate.addEventListener("focus", () => {
+        if (/%$/.test(String(rate.value || ""))) {
+          rate.value = rate.value.replace(/%$/, "");
+        }
+      });
       rate.addEventListener("input", () => {
-        formatRateInput();
+        formatRateInput(false);
         // Only adjust this field's invalid marker
         const isUnknown = !!unknown?.checked;
         const val = String(rate.value || "").replace(/%/g, "");
@@ -811,8 +843,10 @@
         rate.classList.toggle("is-invalid", !ok && !isUnknown && val !== "");
         rate.classList.toggle("is-valid", ok && !isUnknown);
       });
-      rate.addEventListener("blur", formatRateInput);
-      rate.addEventListener("paste", () => setTimeout(formatRateInput, 0));
+      rate.addEventListener("blur", () => formatRateInput(true));
+      rate.addEventListener("paste", () =>
+        setTimeout(() => formatRateInput(false), 0)
+      );
     }
     if (hv) {
       hv.addEventListener("change", () => {
