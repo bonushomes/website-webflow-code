@@ -303,7 +303,7 @@
 
     showLoading(SELECTORS.step1);
     // Generic naming: user clicked address validation (step 1 submit)
-    dataLayerPush("Form_Qualify_Submit", { address_present: true });
+    dataLayerPush("Address_Submit", { address_present: true });
     try {
       const res = await fetch(ENDPOINTS.validateProperty, {
         method: "POST",
@@ -683,7 +683,7 @@
     }
 
     // Final submit (generic)
-    dataLayerPush("Form_ContactInfo_Submit");
+    dataLayerPush("Contact_Info_Submit");
     try {
       // Log final payload for debugging
       try {
@@ -710,10 +710,10 @@
       if (eligible) {
         hideLoadingTo(SELECTORS.stepSuccess);
         // Success confirmation init (generic)
-        dataLayerPush("Form_LeadConfirmation_Init");
+        dataLayerPush("Thank_You_Complete");
       } else {
         hideLoadingTo(SELECTORS.stepFail);
-        dataLayerPush("Form_NotInArea_Init");
+        dataLayerPush("Out_Of_Area_Complete");
       }
     } catch (err) {
       console.error("Submit lead error", err);
@@ -755,7 +755,7 @@
       // Address validation & transition
       await validateAddressAndPrefill();
       // Step 2 initialization (generic)
-      dataLayerPush("Form_HomeDetails_Init");
+      dataLayerPush("Home_Info_Init");
     });
   }
 
@@ -881,10 +881,10 @@
         return;
       }
       // Step 2 submit (generic)
-      dataLayerPush("Form_HomeDetails_Submit");
+      dataLayerPush("Home_Info_Submit");
       showOnlyStep(SELECTORS.step3);
       // Step 3 init (generic)
-      dataLayerPush("Form_ContactInfo_Init");
+      dataLayerPush("Contact_Info_Init");
     });
   }
 
@@ -1012,7 +1012,7 @@
     let firedFor = null; // Keep for possible future needs
     sel.addEventListener("change", (e) => {
       // Generic contact step init (already fired when entering step 3, but harmless to repeat once)
-      dataLayerPush("Form_ContactInfo_Init");
+      dataLayerPush("Contact_Info_Init");
       // Toggle agent-only fields
       toggleAgentConditional(e.target.value);
     });
@@ -1122,7 +1122,7 @@
     const addrEl = qs(SELECTORS.addressInput);
     if (addrEl && addrEl.value) setDisplayAddressText(addrEl.value);
     // Step 1 init (generic)
-    dataLayerPush("Form_Qualify_Init");
+    dataLayerPush("Address_Init");
   }
 
   document.addEventListener("DOMContentLoaded", () => {
