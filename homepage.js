@@ -1,5 +1,10 @@
 //// homepage JS start
 console.log("homepage.js loaded");
+
+// NOTE: The homeowner/agent tab selection has been removed.
+// Now there is a single address field that redirects to /form-v2 with the address as a URL parameter.
+// The form-v2 page will automatically skip step 1 and proceed to step 2 when an address is provided.
+
 //// hero tab change js
 
 document.addEventListener("DOMContentLoaded", function () {

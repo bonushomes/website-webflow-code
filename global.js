@@ -442,6 +442,35 @@ document.addEventListener("click", function (event) {
 
   if (!parentContainer) return;
 
+  // NEW: Handle the simplified form structure
+  // Check if this is the new single address form
+  if (submitType === "home-address") {
+    const addressInput = parentContainer.querySelector(
+      '[data-input="address"]'
+    );
+
+    // Log an error if the address input is not found
+    if (!addressInput) {
+      console.error(
+        "Address input not found within the container:",
+        parentContainer
+      );
+      return;
+    }
+
+    if (addressInput.dataset.selected !== "true") {
+      alert("Please select an address from the dropdown suggestions.");
+      addressInput.focus();
+      return;
+    }
+
+    const addressValue = encodeURIComponent(addressInput.value.trim());
+    const redirectUrl = `/form-v2?address=${addressValue}`;
+    window.location.href = redirectUrl;
+    return;
+  }
+
+  // Legacy support for old homeowner/agent structure (if still needed)
   const addressInput = parentContainer.querySelector('[data-input="address"]');
 
   // Log an error if the address input is not found
@@ -453,12 +482,6 @@ document.addEventListener("click", function (event) {
     return;
   }
 
-  // Alert the user if the address input is empty
-  // let alertMessage = "Please enter an address";
-  // if (!addressInput.value.trim()) {
-  //   alert(alertMessage);
-  //   return;
-  // }
   if (addressInput.dataset.selected !== "true") {
     alert("Please select an address from the dropdown suggestions.");
     addressInput.focus();
@@ -469,14 +492,8 @@ document.addEventListener("click", function (event) {
 
   let redirectUrl = "";
 
-  if (submitType === "homeowner") {
-    redirectUrl = `/form?loading=true&address=${addressValue}`;
-  } else if (submitType === "agent") {
-    redirectUrl = `/form-agent?address=${addressValue}`;
-  } else {
-    console.error("Unknown submit type:", submitType);
-    return;
-  }
+  // NEW: Redirect to single form-v2 page for both homeowner and agent
+  redirectUrl = `/form-v2?address=${addressValue}`;
 
   window.location.href = redirectUrl;
 });

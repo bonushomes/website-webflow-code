@@ -6,6 +6,7 @@
   - Step 3: Contact info (includes agent-or-homeowner)
   - Final: Show [data-step="form-success"] or [data-step="address-fail"] based on zip eligibility
   - Send API calls and GTM events throughout
+  - NEW: Skip step 1 if address is provided via URL parameters
 */
 
 (function formV2Bootstrap() {
@@ -730,6 +731,11 @@
         const currentStep = btn.closest(SELECTORS.step);
         if (!currentStep) return;
         if (currentStep.matches(SELECTORS.step2)) {
+          // NEW: If we came from homepage with address, go back to homepage
+          if (shouldSkipStep1()) {
+            window.history.back();
+            return;
+          }
           showOnlyStep(SELECTORS.step1);
           dataLayerPush("form_v2_nav_back_step1");
         } else if (currentStep.matches(SELECTORS.step3)) {
@@ -1117,6 +1123,12 @@
   }
 
   function initializeVisibility() {
+    // Check if we should skip step 1 due to address in URL
+    if (shouldSkipStep1()) {
+      // Don't show any step yet - handleAddressFromUrl will handle this
+      return;
+    }
+
     // Show step 1 by default; keep others hidden
     showOnlyStep(SELECTORS.step1);
     const addrEl = qs(SELECTORS.addressInput);
@@ -1125,7 +1137,55 @@
     dataLayerPush("Address_Init");
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  // NEW: Function to get address from URL parameters
+  function getAddressFromUrl() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const address = urlParams.get("address");
+      return address ? decodeURIComponent(address) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // NEW: Function to check if we should skip step 1
+  function shouldSkipStep1() {
+    const addressFromUrl = getAddressFromUrl();
+    return !!addressFromUrl;
+  }
+
+  // NEW: Function to pre-populate address from URL and validate
+  async function handleAddressFromUrl() {
+    const addressFromUrl = getAddressFromUrl();
+    if (!addressFromUrl) return false;
+
+    const addressEl = qs(SELECTORS.addressInput);
+    if (!addressEl) return false;
+
+    // Pre-populate the address field
+    addressEl.value = addressFromUrl;
+    addressEl.dataset.selected = "true"; // Mark as selected to bypass validation
+
+    // Set display address
+    setDisplayAddressText(addressFromUrl);
+
+    // Validate the address automatically
+    const result = await validateAddressAndPrefill();
+
+    if (result.ok) {
+      // Skip to step 2
+      showOnlyStep(SELECTORS.step2);
+      dataLayerPush("Home_Info_Init");
+      return true;
+    } else {
+      // If validation fails, stay on step 1 but show the address
+      showOnlyStep(SELECTORS.step1);
+      dataLayerPush("Address_Init");
+      return false;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
     try {
       initializeVisibility();
       wireStep1();
@@ -1135,6 +1195,10 @@
       wireAgentOrHomeownerTracking();
       wirePhoneFormatting();
       wireBackButtons();
+      // NEW: Check for address in URL and handle it
+      if (shouldSkipStep1()) {
+        await handleAddressFromUrl();
+      }
     } catch (err) {
       console.error("form-v2 init error", err);
     }

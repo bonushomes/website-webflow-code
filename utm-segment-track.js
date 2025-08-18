@@ -177,6 +177,9 @@
     // Set up final submission tracking based on page
     if (currentPath === "/form-agent" || currentPath.includes("/form-agent")) {
       setupAgentFormFinalSubmit();
+    } else if (currentPath === "/form-v2" || currentPath.includes("/form-v2")) {
+      // Form-v2 handles its own tracking internally
+      // The form-v2.js file has its own sendSegmentLeadEvent function
     } else if (
       currentPath === "/form" ||
       (currentPath.includes("/form") && !currentPath.includes("/form-agent"))
