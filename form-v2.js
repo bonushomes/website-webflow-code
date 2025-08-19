@@ -453,6 +453,30 @@
     return "Homeowner";
   }
 
+  // NEW: Map discovery source display values to API enum values
+  function mapDiscoverySource(displayValue) {
+    if (!displayValue || displayValue === "Select one...") return "";
+
+    const mapping = {
+      Blog: "Blog",
+      Facebook: "Facebook",
+      "Friend/Family": "FriendFamily",
+      Instagram: "Instagram",
+      "Loan Officer": "LoanOfficer",
+      "Online Search": "OnlineSearch",
+      Podcast: "Podcast",
+      "Postcard/Letter": "PostcardLetter",
+      News: "News",
+      "Real Estate Agent": "RealEstateAgent",
+      Reddit: "Reddit",
+      "Tik Tok": "TikTok",
+      YouTube: "Youtube",
+      Other: "Other",
+    };
+
+    return mapping[displayValue] || displayValue;
+  }
+
   // Phone formatting logic (match legacy behavior)
   function formatPhoneNumber(phone) {
     const cleaned = String(phone || "").replace(/\D/g, "");
@@ -600,9 +624,9 @@
     payload.contactInfo.phoneNumber = (
       qs(SELECTORS.phone)?.value || ""
     ).replace(/\D/g, "");
-    payload.contactInfo.bonusDiscoverySource = (
+    payload.contactInfo.bonusDiscoverySource = mapDiscoverySource(
       qs(SELECTORS.discoverySource)?.value || ""
-    ).trim();
+    );
     payload.contactInfo.homeownerCommunicationConsent = !!qs(
       SELECTORS.legalConsent
     )?.checked;
