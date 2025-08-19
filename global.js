@@ -470,30 +470,40 @@ document.addEventListener("click", function (event) {
     return;
   }
 
-  // Legacy support for old homeowner/agent structure (if still needed)
-  const addressInput = parentContainer.querySelector('[data-input="address"]');
+  // Legacy support for old homeowner/agent structure
+  if (submitType === "homeowner") {
+    const addressInput = parentContainer.querySelector("#address-h");
+    console.log("Homeowner address input", addressInput);
 
-  // Log an error if the address input is not found
-  if (!addressInput) {
-    console.error(
-      "Address input not found within the container:",
-      parentContainer
-    );
-    return;
+    if (!addressInput || !addressInput.value.trim()) {
+      alert("Please enter an address");
+      return;
+    }
+
+    if (addressInput.dataset.selected !== "true") {
+      alert("Please select an address from the dropdown suggestions.");
+      addressInput.focus();
+      return;
+    }
+
+    const addressValue = encodeURIComponent(addressInput.value.trim());
+    window.location.href = `/form?loading=true&address=${addressValue}`;
+  } else if (submitType === "agent") {
+    const addressInput = parentContainer.querySelector("#address-a");
+    console.log("Agent address input", addressInput);
+
+    if (!addressInput || !addressInput.value.trim()) {
+      alert("Please enter an address");
+      return;
+    }
+
+    if (addressInput.dataset.selected !== "true") {
+      alert("Please select an address from the dropdown suggestions.");
+      addressInput.focus();
+      return;
+    }
+
+    const addressValue = encodeURIComponent(addressInput.value.trim());
+    window.location.href = `/form-agent?address=${addressValue}`;
   }
-
-  if (addressInput.dataset.selected !== "true") {
-    alert("Please select an address from the dropdown suggestions.");
-    addressInput.focus();
-    return;
-  }
-
-  const addressValue = encodeURIComponent(addressInput.value.trim());
-
-  let redirectUrl = "";
-
-  // NEW: Redirect to single form-v2 page for both homeowner and agent
-  redirectUrl = `/form-v2?address=${addressValue}`;
-
-  window.location.href = redirectUrl;
 });
