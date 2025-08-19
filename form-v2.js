@@ -44,9 +44,7 @@
     validateProperty:
       "https://qtgh7m7p8l.execute-api.us-west-1.amazonaws.com/prod/validateWebsiteProperty",
     submitLead:
-      "https://vpqqjszp06.execute-api.us-west-1.amazonaws.com/prod/submitHomeownerWebsiteLead",
-    submitAgentLead:
-      "https://vyki8z4pia.execute-api.us-west-1.amazonaws.com/prod/submitAgentWebsiteLead",
+      "https://vj421enzlj.execute-api.us-west-1.amazonaws.com/prod/submitWebsiteLead",
   };
 
   const STORAGE_KEYS = {
@@ -693,10 +691,7 @@
           JSON.stringify(payload, null, 2)
         );
       } catch (_) {}
-      const endpoint =
-        payload.userType === "Agent"
-          ? ENDPOINTS.submitAgentLead
-          : ENDPOINTS.submitLead;
+      const endpoint = ENDPOINTS.submitLead;
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
