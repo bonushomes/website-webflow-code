@@ -507,6 +507,7 @@
         "utm_campaign",
         "utm_keyword",
         "utm_content",
+        "utm_term",
       ];
       const out = {};
       keys.forEach((k) => {
@@ -580,6 +581,25 @@
 
     // Build payload
     const payload = buildBasePayload();
+
+    // Get UTM parameters (matching old form behavior)
+    const utmParams =
+      typeof window.getUtmParams === "function"
+        ? window.getUtmParams()
+        : {
+            source: "",
+            medium: "",
+            keyword: "",
+            content: "",
+            campaign: "",
+            term: "",
+          };
+
+    // Add UTM parameters to payload (matching old form behavior)
+    const payloadWithUtm = {
+      ...payload,
+      utmParams,
+    };
 
     // Address fields
     const struct = getStructAddressFromSession();
@@ -719,7 +739,7 @@
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payloadWithUtm),
       });
       const json = await res.json();
       sessionStorage.setItem("responseData_v2", JSON.stringify(json));

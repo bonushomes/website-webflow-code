@@ -13,6 +13,7 @@
       "utm_campaign",
       "utm_keyword",
       "utm_content",
+      "utm_term",
     ].forEach((key) => {
       const value = localStorage.getItem(key);
       if (value) {
@@ -31,6 +32,7 @@
       keyword: utms.utm_keyword || "",
       content: utms.utm_content || "",
       campaign: utms.utm_campaign || "",
+      term: utms.utm_term || "",
     };
   }
 
@@ -44,6 +46,7 @@
       "utm_campaign",
       "utm_keyword",
       "utm_content",
+      "utm_term",
     ].forEach((key) => {
       const value = params.get(key);
       if (value) {
