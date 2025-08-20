@@ -592,7 +592,6 @@
             keyword: "",
             content: "",
             campaign: "",
-            term: "",
           };
 
     // Add UTM parameters to payload (matching old form behavior)

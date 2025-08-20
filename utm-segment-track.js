@@ -29,10 +29,9 @@
     return {
       source: utms.utm_source || "",
       medium: utms.utm_medium || "",
-      keyword: utms.utm_keyword || "",
+      keyword: utms.utm_term || utms.utm_keyword || "", // Use utm_term as keyword if available
       content: utms.utm_content || "",
       campaign: utms.utm_campaign || "",
-      term: utms.utm_term || "",
     };
   }
 
