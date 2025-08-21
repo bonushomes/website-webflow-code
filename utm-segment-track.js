@@ -118,6 +118,14 @@
       analytics.track("Lead Submitted", segmentData);
 
       if (typeof fbq === "function") {
+        // Get form data for Meta learning
+        const homeType =
+          document.querySelector('[data-input="home-type"]')?.value || "";
+        const interestRate =
+          document.querySelector('[data-input="interest-rate"]')?.value || "";
+        const homeValue =
+          document.querySelector('[data-input="estimated-value"]')?.value || "";
+
         const fbPayload = {
           action_source: "website",
           event_name: "Lead",
@@ -134,6 +142,9 @@
             form_type: segmentData.form_type,
             source: segmentData.source,
             brokerage: segmentData.brokerage,
+            home_type: homeType,
+            interest_rate: interestRate,
+            home_value: homeValue,
           },
           locale: navigator.language,
           deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

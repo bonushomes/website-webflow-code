@@ -547,7 +547,39 @@
       ) {
         analytics.track("Lead Submitted", data);
         if (typeof fbq === "function") {
-          fbq("track", "Lead", {}, { eventID: data.event_id });
+          // Get form data for Meta learning
+          const homeValue = qs(SELECTORS.homeValueEst)?.value || "";
+          const interestRate =
+            normalizeInterestRate(qs(SELECTORS.estimatedInterestRate)?.value) ||
+            "";
+          const isUnknownRate = !!qs(SELECTORS.unknownInterest)?.checked;
+
+          const fbPayload = {
+            action_source: "website",
+            event_name: "Lead",
+            event_time: new Date().toISOString(),
+            user_data: {
+              email: data.email,
+              phone: data.phone,
+              firstName: data.first_name,
+              lastName: data.last_name,
+              client_user_agent: navigator.userAgent,
+            },
+            app_data_field: {
+              home_address: data.home_address,
+              form_type: data.form_type,
+              source: data.source,
+              home_value: homeValue,
+              interest_rate: isUnknownRate ? "Unknown" : interestRate,
+            },
+            locale: navigator.language,
+            deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            event_source_url: window.location.href,
+            value: 0,
+            currency: "USD",
+          };
+
+          fbq("track", "Lead", fbPayload, { eventID: data.event_id });
         }
       }
     } catch (_) {}
