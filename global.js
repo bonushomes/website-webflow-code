@@ -472,7 +472,10 @@ document.addEventListener("click", function (event) {
 
   // Legacy support for old homeowner/agent structure
   if (submitType === "homeowner") {
-    const addressInput = parentContainer.querySelector("#address-h");
+    // Try both old (#address-h) and new ([data-input="address"]) selectors
+    const addressInput =
+      parentContainer.querySelector("#address-h") ||
+      parentContainer.querySelector('[data-input="address"]');
     console.log("Homeowner address input", addressInput);
 
     if (!addressInput || !addressInput.value.trim()) {
@@ -489,7 +492,10 @@ document.addEventListener("click", function (event) {
     const addressValue = encodeURIComponent(addressInput.value.trim());
     window.location.href = `/form?loading=true&address=${addressValue}`;
   } else if (submitType === "agent") {
-    const addressInput = parentContainer.querySelector("#address-a");
+    // Try both old (#address-a) and new ([data-input="address"]) selectors
+    const addressInput =
+      parentContainer.querySelector("#address-a") ||
+      parentContainer.querySelector('[data-input="address"]');
     console.log("Agent address input", addressInput);
 
     if (!addressInput || !addressInput.value.trim()) {
