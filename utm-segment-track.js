@@ -38,20 +38,32 @@
   // 2. UTM Capture and Storage (runs on every page load)
   function saveUtms() {
     const params = new URLSearchParams(window.location.search);
-
-    [
+    const utmKeys = [
       "utm_source",
       "utm_medium",
       "utm_campaign",
       "utm_keyword",
       "utm_content",
       "utm_term",
-    ].forEach((key) => {
-      const value = params.get(key);
-      if (value) {
-        localStorage.setItem(key, value);
-      }
-    });
+    ];
+
+    // Check if any UTM parameters are present in current URL
+    const hasUtmParams = utmKeys.some((key) => params.get(key));
+
+    if (hasUtmParams) {
+      // Store new UTM parameters
+      utmKeys.forEach((key) => {
+        const value = params.get(key);
+        if (value) {
+          localStorage.setItem(key, value);
+        }
+      });
+    } else {
+      // Clear old UTM parameters if no new ones present
+      utmKeys.forEach((key) => {
+        localStorage.removeItem(key);
+      });
+    }
   }
 
   // 3. Save address as user progresses (to capture address from early steps)

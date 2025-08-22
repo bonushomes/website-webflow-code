@@ -919,7 +919,14 @@
         rate.classList.toggle("is-invalid", !ok && !isUnknown && val !== "");
         rate.classList.toggle("is-valid", ok && !isUnknown);
       });
-      rate.addEventListener("blur", () => formatRateInput(true));
+      rate.addEventListener("blur", () => {
+        formatRateInput(true);
+        // Track interest rate input (only if not unknown and has value)
+        const isUnknown = !!unknown?.checked;
+        if (!isUnknown && rate.value && rate.value.trim()) {
+          dataLayerPush("Home_Info_QInterest", { value: rate.value });
+        }
+      });
       rate.addEventListener("paste", () =>
         setTimeout(() => formatRateInput(false), 0)
       );
@@ -930,6 +937,8 @@
         if (ok) {
           hv.classList.remove("is-invalid");
           hv.classList.add("is-valid");
+          // Track home value selection
+          dataLayerPush("Home_Info_QPrice", { value: hv.value });
         }
       });
     }
@@ -939,6 +948,8 @@
         if (ok) {
           move.classList.remove("is-invalid");
           move.classList.add("is-valid");
+          // Track move timeline selection
+          dataLayerPush("Home_Info_QMove", { value: move.value });
         }
       });
     }
