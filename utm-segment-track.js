@@ -59,10 +59,21 @@
         }
       });
     } else {
-      // Clear old UTM parameters if no new ones present
-      utmKeys.forEach((key) => {
-        localStorage.removeItem(key);
-      });
+      // Only clear UTM parameters if this is NOT a form-related page
+      // (preserve UTM params during form navigation)
+      const currentPath = window.location.pathname;
+      const isFormPage =
+        currentPath.includes("/form") ||
+        currentPath.includes("/submit-") ||
+        currentPath.includes("/form-v2");
+
+      if (!isFormPage) {
+        // Clear old UTM parameters only on non-form pages
+        utmKeys.forEach((key) => {
+          localStorage.removeItem(key);
+        });
+      }
+      // If it's a form page, keep existing UTM parameters
     }
   }
 
