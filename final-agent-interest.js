@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
               success: res.data.submitWebsiteAgent.success,
               contactId: res.data.submitWebsiteAgent.contactId,
             });
-            const redirectUrl = `/submit-home-submitted?${queryParams.toString()}`;
+            const redirectUrl = `/submit-agent-success?${queryParams.toString()}`;
             window.location.href = redirectUrl;
           } else {
             console.error(

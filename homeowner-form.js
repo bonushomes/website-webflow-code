@@ -1619,6 +1619,8 @@ async function handleAddressSubmission() {
         // If validation fails (i.e. none of Zip, MSA, or State is true), mark as Failed and redirect.
         basePayload.locationProfile.eligibilityCheck = "Failed";
         sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
+        // Keep loading state while redirecting to zip validation page
+        showLoading("1");
         window.location.href = "/submit-not-in-zip";
         return;
       } else {
@@ -1719,6 +1721,8 @@ async function handleAddressSubmission() {
         }
 
         sessionStorage.setItem("basePayload", JSON.stringify(basePayload));
+        // Keep loading state while redirecting to zip validation page
+        showLoading("1");
         window.location.href = "/submit-not-in-zip";
         return;
       } else {

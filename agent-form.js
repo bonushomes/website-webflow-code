@@ -857,7 +857,7 @@ async function handleAddressSubmission() {
         setupFinalSubmission();
         finalSubmissionSetup = true;
       }
-      window.location.href = "/submit-home-submitted";
+      window.location.href = "/submit-agent-fail-not-in-state";
       return;
     }
 
