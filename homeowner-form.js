@@ -3623,20 +3623,8 @@ async function submitFinal() {
     sessionStorage.removeItem("basePayload");
     sessionStorage.setItem("finalBasePayload", JSON.stringify(basePayload));
 
-    // Determine redirect based on qualification
-    if (basePayload.isQualified) {
-      window.location.href = "/submit-home-submitted";
-    } else {
-      // Hide all steps
-      document
-        .querySelectorAll("[data-step]")
-        .forEach((step) => (step.style.display = "none"));
-      // Show the not qualified step
-      const notQualifiedStep = document.querySelector(
-        '[data-step="not-qualified"]'
-      );
-      if (notQualifiedStep) notQualifiedStep.style.display = "block";
-    }
+    // Simplified redirect - all users go to success page regardless of qualification
+    window.location.href = "/submit-home-submitted";
 
     return apiResponse;
   } catch (error) {
@@ -3645,18 +3633,8 @@ async function submitFinal() {
     console.error("Submission error:", error);
     console.log("Form submission failed, allowing retry");
 
-    // Even if there's an error, we should still redirect appropriately
-    if (basePayload.isQualified) {
-      window.location.href = "/submit-home-submitted";
-    } else {
-      document
-        .querySelectorAll("[data-step]")
-        .forEach((step) => (step.style.display = "none"));
-      const notQualifiedStep = document.querySelector(
-        '[data-step="not-qualified"]'
-      );
-      if (notQualifiedStep) notQualifiedStep.style.display = "block";
-    }
+    // Even if there's an error, redirect to success page (simplified flow)
+    window.location.href = "/submit-home-submitted";
   }
 }
 

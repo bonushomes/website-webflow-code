@@ -487,7 +487,7 @@ function setupBackNavigation() {
 //         "agentData",
 //         JSON.stringify({ resp: data.data?.property })
 //       );
-//       window.location.href = "/submit-agent-fail-not-in-state";
+//       window.location.href = "/submit-home-submitted";
 //       return;
 //     }
 
@@ -595,7 +595,7 @@ function setupBackNavigation() {
 //         "agentData",
 //         JSON.stringify({ resp: data.data?.property })
 //       );
-//       // window.location.href = "/submit-agent-fail-not-in-state";
+//       // window.location.href = "/submit-home-submitted";
 //       // showErrorMessageInStep2(
 //       //   "We found your location but it is not in an area we operate in. Please check the address and try again."
 //       // );
@@ -857,7 +857,7 @@ async function handleAddressSubmission() {
         setupFinalSubmission();
         finalSubmissionSetup = true;
       }
-      window.location.href = "/submit-agent-fail-not-in-state";
+      window.location.href = "/submit-home-submitted";
       return;
     }
 
@@ -1127,7 +1127,7 @@ function setupQueryParamCheck() {
 //         success: res.success,
 //         leadId: res.leadId,
 //       });
-//       window.location.href = `/submit-agent-success?${queryParams.toString()}`;
+//       window.location.href = `/submit-home-submitted?${queryParams.toString()}`;
 //     })
 //     .catch((err) => {
 //       removeLoading("2");
@@ -1202,7 +1202,7 @@ function setupFinalSubmission() {
         success: res.success,
         leadId: res.leadId,
       });
-      window.location.href = `/submit-agent-success?${queryParams.toString()}`;
+      window.location.href = `/submit-home-submitted?${queryParams.toString()}`;
     } catch (err) {
       // Reset flag on error so user can retry
       sessionStorage.removeItem("formSubmitted");
