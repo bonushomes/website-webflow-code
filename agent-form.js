@@ -1202,6 +1202,11 @@ function setupFinalSubmission() {
         success: res.success,
         leadId: res.leadId,
       });
+      // Add address to query params
+      const addressInput = document.querySelector('[data-input="address"]');
+      if (addressInput && addressInput.value.trim()) {
+        queryParams.set("address", addressInput.value.trim());
+      }
       window.location.href = `/submit-home-submitted?${queryParams.toString()}`;
     } catch (err) {
       // Reset flag on error so user can retry

@@ -3628,7 +3628,15 @@ async function submitFinal() {
     sessionStorage.setItem("finalBasePayload", JSON.stringify(basePayload));
 
     // Simplified redirect - all users go to success page regardless of qualification
-    window.location.href = "/submit-home-submitted";
+    // Get address for URL parameter
+    const addressInput = document.querySelector('[data-input="address"]');
+    const addressValue = addressInput
+      ? encodeURIComponent(addressInput.value.trim())
+      : "";
+    const redirectUrl = addressValue
+      ? `/submit-home-submitted?address=${addressValue}`
+      : "/submit-home-submitted";
+    window.location.href = redirectUrl;
 
     return apiResponse;
   } catch (error) {
@@ -3638,7 +3646,15 @@ async function submitFinal() {
     console.log("Form submission failed, allowing retry");
 
     // Even if there's an error, redirect to success page (simplified flow)
-    window.location.href = "/submit-home-submitted";
+    // Get address for URL parameter
+    const addressInput = document.querySelector('[data-input="address"]');
+    const addressValue = addressInput
+      ? encodeURIComponent(addressInput.value.trim())
+      : "";
+    const redirectUrl = addressValue
+      ? `/submit-home-submitted?address=${addressValue}`
+      : "/submit-home-submitted";
+    window.location.href = redirectUrl;
   }
 }
 
