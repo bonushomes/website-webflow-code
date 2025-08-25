@@ -2309,7 +2309,7 @@ function homeDataValid(data) {
     valid = false;
   }
 
-  if (parseFirstNumberFromRange(data.estimated_value) >= 600000) {
+  if (parseFirstNumberFromRange(data.estimated_value) >= 500000) {
     console.log("failed for est home value");
     updateEligibilityCheck("ESTIMATED_VALUE", "Failed");
     valid = false;
@@ -3627,15 +3627,21 @@ async function submitFinal() {
     sessionStorage.removeItem("basePayload");
     sessionStorage.setItem("finalBasePayload", JSON.stringify(basePayload));
 
-    // Simplified redirect - all users go to success page regardless of qualification
+    // Redirect based on qualification status
     // Get address for URL parameter
     const addressInput = document.querySelector('[data-input="address"]');
     const addressValue = addressInput
       ? encodeURIComponent(addressInput.value.trim())
       : "";
+
+    // Choose redirect URL based on qualification
+    const baseUrl = basePayload.isQualified
+      ? "/submit-home-submitted"
+      : "/submit-home-submitted-u";
+
     const redirectUrl = addressValue
-      ? `/submit-home-submitted?address=${addressValue}`
-      : "/submit-home-submitted";
+      ? `${baseUrl}?address=${addressValue}`
+      : baseUrl;
     window.location.href = redirectUrl;
 
     return apiResponse;
@@ -3645,15 +3651,21 @@ async function submitFinal() {
     console.error("Submission error:", error);
     console.log("Form submission failed, allowing retry");
 
-    // Even if there's an error, redirect to success page (simplified flow)
+    // Even if there's an error, redirect based on qualification status
     // Get address for URL parameter
     const addressInput = document.querySelector('[data-input="address"]');
     const addressValue = addressInput
       ? encodeURIComponent(addressInput.value.trim())
       : "";
+
+    // Choose redirect URL based on qualification (default to unqualified on error)
+    const baseUrl = basePayload.isQualified
+      ? "/submit-home-submitted"
+      : "/submit-home-submitted-u";
+
     const redirectUrl = addressValue
-      ? `/submit-home-submitted?address=${addressValue}`
-      : "/submit-home-submitted";
+      ? `${baseUrl}?address=${addressValue}`
+      : baseUrl;
     window.location.href = redirectUrl;
   }
 }
