@@ -1443,7 +1443,7 @@ function validateAndBuildHomeProfile(propertyData) {
     propertyData.valueEstimates && propertyData.valueEstimates.length > 0
       ? parseInt(propertyData.valueEstimates[0].estimate, 10) || 0
       : 0; // Default to 0
-  const estimatePassed = estimate < 600000 ? "Passed" : "Failed";
+  const estimatePassed = estimate < 500000 ? "Passed" : "Failed";
   if (estimatePassed === "Failed") allPassed = false;
 
   // Format the estimate with commas for thousands separators
