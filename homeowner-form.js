@@ -2260,7 +2260,10 @@ function homeDataValid(data) {
   console.log("validating data", data);
   let valid = true;
 
-  if (data.home_type !== "Single-family detached home") {
+  if (
+    data.home_type !== "Single-family detached home" &&
+    data.home_type !== "SingleFamily"
+  ) {
     console.log("failed for data.homeType", data.homeType);
     updateEligibilityCheck("HOME_TYPE", "Failed");
     valid = false;
