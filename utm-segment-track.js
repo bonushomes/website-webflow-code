@@ -236,6 +236,18 @@
       currentPath.includes("/submit-agent-fail-not-in-state")
     ) {
       setupAgentNotInAreaFinalSubmit();
+    } else if (
+      currentPath === "/submit-home-submitted" ||
+      currentPath.includes("/submit-home-submitted")
+    ) {
+      // Homeowner form now handles Facebook pixel tracking internally
+      // No additional tracking needed here
+    } else if (
+      currentPath === "/submit-home-submitted-u" ||
+      currentPath.includes("/submit-home-submitted-u")
+    ) {
+      // Homeowner form now handles Facebook pixel tracking internally
+      // No additional tracking needed here
     }
   }
 

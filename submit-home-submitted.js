@@ -88,9 +88,86 @@
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
       updateDisplayAddress();
+      trackLeadEvent();
     });
   } else {
     updateDisplayAddress();
+    trackLeadEvent();
+  }
+
+  // Track Facebook Pixel event based on page
+  function trackLeadEvent() {
+    const currentPath = window.location.pathname;
+    const isQualifiedPage = currentPath === "/submit-home-submitted";
+    const isUnqualifiedPage = currentPath === "/submit-home-submitted-u";
+
+    console.log("🎯 Tracking Lead event for page:", currentPath);
+    console.log("🎯 Is qualified page:", isQualifiedPage);
+    console.log("🎯 Is unqualified page:", isUnqualifiedPage);
+
+    if (typeof fbq === "function") {
+      // Get data from sessionStorage
+      const finalBasePayload = sessionStorage.getItem("finalBasePayload");
+      let userData = {};
+      let homeData = {};
+
+      if (finalBasePayload) {
+        try {
+          const parsed = JSON.parse(finalBasePayload);
+          userData = {
+            email: parsed.contactInfo?.email || "",
+            phone: parsed.contactInfo?.phoneNumber || "",
+            firstName: parsed.contactInfo?.firstName || "",
+            lastName: parsed.contactInfo?.lastName || "",
+          };
+          homeData = {
+            home_address: parsed.streetAddress || "",
+            home_type:
+              parsed.homeProfile?.find((item) => item.id === "HOME_TYPE")
+                ?.value || "",
+            interest_rate:
+              parsed.homeProfile?.find(
+                (item) => item.id === "MORTGAGE_INTEREST_RATE"
+              )?.value || "",
+            home_value:
+              parsed.homeProfile?.find((item) => item.id === "ESTIMATED_VALUE")
+                ?.value || "",
+          };
+        } catch (e) {
+          console.warn("Failed to parse finalBasePayload for FB tracking:", e);
+        }
+      }
+
+      const eventName = isQualifiedPage ? "Qualified Lead" : "Unqualified Lead";
+      const formType = isQualifiedPage
+        ? "homeowner_qualified"
+        : "homeowner_unqualified";
+      const qualificationStatus = isQualifiedPage ? "qualified" : "unqualified";
+
+      const fbPayload = {
+        action_source: "website",
+        event_name: eventName,
+        event_time: new Date().toISOString(),
+        user_data: {
+          email: userData.email,
+          phone: userData.phone,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        },
+        app_data_field: {
+          home_address: homeData.home_address,
+          form_type: formType,
+          qualification_status: qualificationStatus,
+        },
+        event_source_url: window.location.href,
+      };
+
+      console.log("🎯 FB Lead Payload:", fbPayload);
+      fbq("track", eventName, fbPayload);
+      console.log("✅ Lead event sent to Facebook Pixel:", eventName);
+    } else {
+      console.warn("Meta Pixel (fbq) not available for Lead tracking");
+    }
   }
 
   // Debug function

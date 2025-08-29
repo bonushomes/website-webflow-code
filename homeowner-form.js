@@ -3630,46 +3630,6 @@ async function submitFinal() {
     sessionStorage.removeItem("basePayload");
     sessionStorage.setItem("finalBasePayload", JSON.stringify(basePayload));
 
-    // Send Facebook pixel event before redirect
-    if (typeof fbq === "function") {
-      const addressInput = document.querySelector('[data-input="address"]');
-      const addressValue = addressInput ? addressInput.value.trim() : "";
-
-      const fbPayload = {
-        action_source: "website",
-        event_name: basePayload.isQualified
-          ? "Qualified Lead"
-          : "Unqualified Lead",
-        event_time: new Date().toISOString(),
-        user_data: {
-          email: basePayload.contactInfo?.email || "",
-          phone: basePayload.contactInfo?.phoneNumber || "",
-          firstName: basePayload.contactInfo?.firstName || "",
-          lastName: basePayload.contactInfo?.lastName || "",
-        },
-        app_data_field: {
-          home_address: addressValue,
-          form_type: basePayload.isQualified
-            ? "homeowner_qualified"
-            : "homeowner_unqualified",
-          qualification_status: basePayload.isQualified
-            ? "qualified"
-            : "unqualified",
-        },
-        event_source_url: window.location.href,
-      };
-
-      console.log("🎯 FB Lead Payload:", fbPayload);
-      fbq(
-        "track",
-        basePayload.isQualified ? "Qualified Lead" : "Unqualified Lead",
-        fbPayload
-      );
-      console.log("✅ Lead event sent to Facebook Pixel");
-    } else {
-      console.warn("Meta Pixel (fbq) not available for Lead tracking");
-    }
-
     // Redirect based on qualification status
     // Get address for URL parameter
     const addressInput = document.querySelector('[data-input="address"]');
@@ -3693,46 +3653,6 @@ async function submitFinal() {
     sessionStorage.removeItem("formSubmitted");
     console.error("Submission error:", error);
     console.log("Form submission failed, allowing retry");
-
-    // Send Facebook pixel event before redirect (even on error)
-    if (typeof fbq === "function") {
-      const addressInput = document.querySelector('[data-input="address"]');
-      const addressValue = addressInput ? addressInput.value.trim() : "";
-
-      const fbPayload = {
-        action_source: "website",
-        event_name: basePayload.isQualified
-          ? "Qualified Lead"
-          : "Unqualified Lead",
-        event_time: new Date().toISOString(),
-        user_data: {
-          email: basePayload.contactInfo?.email || "",
-          phone: basePayload.contactInfo?.phoneNumber || "",
-          firstName: basePayload.contactInfo?.firstName || "",
-          lastName: basePayload.contactInfo?.lastName || "",
-        },
-        app_data_field: {
-          home_address: addressValue,
-          form_type: basePayload.isQualified
-            ? "homeowner_qualified"
-            : "homeowner_unqualified",
-          qualification_status: basePayload.isQualified
-            ? "qualified"
-            : "unqualified",
-        },
-        event_source_url: window.location.href,
-      };
-
-      console.log("🎯 FB Lead Payload (error case):", fbPayload);
-      fbq(
-        "track",
-        basePayload.isQualified ? "Qualified Lead" : "Unqualified Lead",
-        fbPayload
-      );
-      console.log("✅ Lead event sent to Facebook Pixel (error case)");
-    } else {
-      console.warn("Meta Pixel (fbq) not available for Lead tracking");
-    }
 
     // Even if there's an error, redirect based on qualification status
     // Get address for URL parameter
