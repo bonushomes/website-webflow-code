@@ -3637,7 +3637,9 @@ async function submitFinal() {
 
       const fbPayload = {
         action_source: "website",
-        event_name: basePayload.isQualified ? "Qualified Lead" : "Lead",
+        event_name: basePayload.isQualified
+          ? "Qualified Lead"
+          : "Unqualified Lead",
         event_time: new Date().toISOString(),
         user_data: {
           email: basePayload.contactInfo?.email || "",
@@ -3660,7 +3662,7 @@ async function submitFinal() {
       console.log("🎯 FB Lead Payload:", fbPayload);
       fbq(
         "track",
-        basePayload.isQualified ? "Qualified Lead" : "Lead",
+        basePayload.isQualified ? "Qualified Lead" : "Unqualified Lead",
         fbPayload
       );
       console.log("✅ Lead event sent to Facebook Pixel");
@@ -3699,7 +3701,9 @@ async function submitFinal() {
 
       const fbPayload = {
         action_source: "website",
-        event_name: basePayload.isQualified ? "Qualified Lead" : "Lead",
+        event_name: basePayload.isQualified
+          ? "Qualified Lead"
+          : "Unqualified Lead",
         event_time: new Date().toISOString(),
         user_data: {
           email: basePayload.contactInfo?.email || "",
@@ -3722,7 +3726,7 @@ async function submitFinal() {
       console.log("🎯 FB Lead Payload (error case):", fbPayload);
       fbq(
         "track",
-        basePayload.isQualified ? "Qualified Lead" : "Lead",
+        basePayload.isQualified ? "Qualified Lead" : "Unqualified Lead",
         fbPayload
       );
       console.log("✅ Lead event sent to Facebook Pixel (error case)");
