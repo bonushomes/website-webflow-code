@@ -789,7 +789,7 @@
       try {
         console.log(
           "Final Payload being sent to the API:",
-          JSON.stringify(payload, null, 2)
+          JSON.stringify(payloadWithUtm, null, 2)
         );
       } catch (_) {}
       const endpoint = ENDPOINTS.submitLead;
