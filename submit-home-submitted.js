@@ -88,74 +88,9 @@
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
       updateDisplayAddress();
-      trackQualifiedLead();
     });
   } else {
     updateDisplayAddress();
-    trackQualifiedLead();
-  }
-
-  // Track Facebook Pixel event for Qualified Lead
-  function trackQualifiedLead() {
-    console.log("🎯 Tracking Qualified Lead event");
-
-    if (typeof fbq === "function") {
-      // Get data from sessionStorage
-      const finalBasePayload = sessionStorage.getItem("finalBasePayload");
-      let userData = {};
-      let homeData = {};
-
-      if (finalBasePayload) {
-        try {
-          const parsed = JSON.parse(finalBasePayload);
-          userData = {
-            email: parsed.contactInfo?.email || "",
-            phone: parsed.contactInfo?.phoneNumber || "",
-            firstName: parsed.contactInfo?.firstName || "",
-            lastName: parsed.contactInfo?.lastName || "",
-          };
-          homeData = {
-            home_address: parsed.streetAddress || "",
-            home_type:
-              parsed.homeProfile?.find((item) => item.id === "HOME_TYPE")
-                ?.value || "",
-            interest_rate:
-              parsed.homeProfile?.find(
-                (item) => item.id === "MORTGAGE_INTEREST_RATE"
-              )?.value || "",
-            home_value:
-              parsed.homeProfile?.find((item) => item.id === "ESTIMATED_VALUE")
-                ?.value || "",
-          };
-        } catch (e) {
-          console.warn("Failed to parse finalBasePayload for FB tracking:", e);
-        }
-      }
-
-      const fbPayload = {
-        action_source: "website",
-        event_name: "Qualified Lead",
-        event_time: new Date().toISOString(),
-        user_data: {
-          email: userData.email,
-          phone: userData.phone,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-        },
-        app_data_field: {
-          form_type: "homeowner_qualified",
-        },
-        event_source_url: window.location.href,
-      };
-
-      console.log("🎯 FB Qualified Lead Payload:", fbPayload);
-      fbq("track", "Qualified Lead", fbPayload);
-      console.log("✅ Qualified Lead event sent to Facebook Pixel");
-    } else {
-      console.warn(
-        "Meta Pixel (fbq) not available for Qualified Lead tracking"
-      );
-    }
   }
 
   // Debug function
