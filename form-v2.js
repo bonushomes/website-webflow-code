@@ -634,20 +634,40 @@
 
     // Address fields
     const struct = getStructAddressFromSession();
+    console.log("🔍 DEBUG: struct from session:", struct);
+    console.log("🔍 DEBUG: rawAddress:", rawAddress);
+
     if (struct?.components) {
+      console.log("🔍 DEBUG: Using struct components");
       payload.streetAddress = `${struct.components.streetNumber || ""} ${
         struct.components.street || ""
       }`.trim();
       payload.city = struct.components.city || "";
       payload.state = transformStateToAbbrev(struct.components.state || "");
       payload.zipCode = struct.components.zip || "";
+      console.log("🔍 DEBUG: Address populated from struct:", {
+        streetAddress: payload.streetAddress,
+        city: payload.city,
+        state: payload.state,
+        zipCode: payload.zipCode,
+      });
     } else {
+      console.log("🔍 DEBUG: No struct, trying parseAddressFromInput");
       const parsed = parseAddressFromInput(rawAddress);
+      console.log("🔍 DEBUG: parsed result:", parsed);
       if (parsed) {
         payload.streetAddress = parsed.streetAddress;
         payload.city = parsed.city;
         payload.state = parsed.state;
         payload.zipCode = parsed.zipCode;
+        console.log("🔍 DEBUG: Address populated from parse:", {
+          streetAddress: payload.streetAddress,
+          city: payload.city,
+          state: payload.state,
+          zipCode: payload.zipCode,
+        });
+      } else {
+        console.log("🔍 DEBUG: Address parsing failed - all fields empty");
       }
     }
 
@@ -689,6 +709,7 @@
 
     // Mirror locationProfile from first API call
     const storedLP = getStoredLocationProfile();
+    console.log("🔍 DEBUG: storedLP:", storedLP);
     let eligible = false;
     if (storedLP) {
       const lpPreferred = !!storedLP.isInPreferredZipCode;
@@ -722,17 +743,22 @@
       // Keep API's eligibilityCheck untouched; matrix only affects isQualified
     } else {
       // Fallback to zipEligible flag
+      console.log("🔍 DEBUG: No storedLP, using fallback");
       try {
         eligible = JSON.parse(
           sessionStorage.getItem(STORAGE_KEYS.zipEligible) || "false"
         );
-      } catch (_) {}
+        console.log("🔍 DEBUG: zipEligible from session:", eligible);
+      } catch (_) {
+        console.log("🔍 DEBUG: zipEligible parse failed");
+      }
       payload.locationProfile.eligibilityCheck = eligible ? "Passed" : "Failed";
       payload.locationProfile.isInPreferredZipCode = !!eligible;
       if (eligible) {
         payload.locationProfile.isInOperatedMSA = true;
         payload.locationProfile.isInOperatedState = true;
       }
+      console.log("🔍 DEBUG: Final locationProfile:", payload.locationProfile);
     }
     payload.isQualified = !!eligible;
     if (!eligible) {
