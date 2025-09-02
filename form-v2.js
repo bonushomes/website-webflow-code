@@ -245,8 +245,8 @@
       isQualified: false,
       locationProfile: {
         isInPreferredZipCode: false,
-        isInOperatedMSA: false,
-        isInOperatedState: false,
+        isInOperatedMSA: false, // No longer used for validation
+        isInOperatedState: false, // No longer used for validation
         eligibilityCheck: "Failed",
       },
       homeProfile: [
@@ -725,12 +725,12 @@
         eligibilityCheck: storedLP.eligibilityCheck,
       };
 
-      // Eligibility per matrix
+      // Eligibility per matrix - only pass if zip code is preferred
       if (payload.userType === "Agent") {
-        eligible = lpPreferred || lpMSA || lpState;
+        eligible = lpPreferred; // Only preferred zip code
       } else {
-        // Homeowner
-        eligible = lpPreferred || lpMSA;
+        // Homeowner - only preferred zip code
+        eligible = lpPreferred;
       }
 
       // If API didn't provide eligibilityCheck, derive from matrix so field is always present
@@ -754,9 +754,13 @@
       }
       payload.locationProfile.eligibilityCheck = eligible ? "Passed" : "Failed";
       payload.locationProfile.isInPreferredZipCode = !!eligible;
+      // Only set MSA and State to true if zip code is preferred
       if (eligible) {
         payload.locationProfile.isInOperatedMSA = true;
         payload.locationProfile.isInOperatedState = true;
+      } else {
+        payload.locationProfile.isInOperatedMSA = false;
+        payload.locationProfile.isInOperatedState = false;
       }
       console.log("🔍 DEBUG: Final locationProfile:", payload.locationProfile);
     }

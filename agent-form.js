@@ -16,8 +16,8 @@ const basePayload = {
   isQualified: false,
   locationProfile: {
     isInPreferredZipCode: false,
-    isInOperatedMSA: false,
-    isInOperatedState: false,
+    isInOperatedMSA: false, // No longer used for validation
+    isInOperatedState: false, // No longer used for validation
     eligibilityCheck: "Failed",
   },
   homeProfile: [
@@ -960,14 +960,8 @@ function validateAddressResponse(data) {
     location = data.errors[0]?.extensions?.locationProfile;
   }
 
-  // Now run our cascade logic:
+  // Only pass if zip code is preferred - no MSA or State fallback
   if (location?.isInPreferredZipCode === true) {
-    return true;
-  }
-  if (location?.isInOperatedMSA === true) {
-    return true;
-  }
-  if (location?.isInOperatedState === true) {
     return true;
   }
   return false;
@@ -1473,21 +1467,11 @@ async function submitDataToAPI(propertyData, userData) {
     : addressData.state; // Make sure this uses the transformed state if others are not available
 
   function determineLocationEligibility(data) {
-    if (
-      data.isInOperatedMSA ||
-      data.isInOperatedState ||
-      isInPreferredZipCode
-    ) {
+    // Only pass if zip code is preferred - no MSA or State fallback
+    if (data.isInPreferredZipCode) {
       return "Passed";
     }
-    if (
-      !data.isInOperatedMSA &&
-      !data.isInOperatedState &&
-      !data.isInPreferredZipCode
-    ) {
-      return "Failed";
-    }
-    return "NONE";
+    return "Failed";
   }
 
   // Get UTM parameters

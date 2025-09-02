@@ -1108,11 +1108,8 @@ function validateAddressResponse(data) {
     location = data.errors[0]?.extensions?.locationProfile;
   }
 
+  // Only pass if zip code is preferred - no MSA fallback
   if (location?.isInPreferredZipCode === true) {
-    return true;
-  }
-
-  if (location?.isInOperatedMSA === true) {
     return true;
   }
 
@@ -1175,8 +1172,8 @@ const basePayload = {
   isQualified: false,
   locationProfile: {
     isInPreferredZipCode: false,
-    isInOperatedMSA: false,
-    isInOperatedState: false,
+    isInOperatedMSA: false, // No longer used for validation
+    isInOperatedState: false, // No longer used for validation
     eligibilityCheck: "Failed",
   },
   homeProfile: [
