@@ -255,10 +255,10 @@
             }
           }
 
-          // Determine form type based on userType
-          const formType = parsed.userType === "Agent" ? "agent" : "homeowner";
+          // This page is only for homeowners - agents go to /submit-agent-success
+          const formType = "homeowner";
           const source = parsed.contactInfo?.bonusDiscoverySource || "";
-          const brokerage = parsed.contactInfo?.agentBrokerage || "";
+          const brokerage = "";
 
           const segmentData = {
             first_name: userData.firstName,

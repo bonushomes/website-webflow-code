@@ -1160,7 +1160,7 @@ function setupQueryParamCheck() {
 //         success: res.success,
 //         leadId: res.leadId,
 //       });
-//       window.location.href = `/submit-home-submitted?${queryParams.toString()}`;
+//       window.location.href = `/submit-agent-success?${queryParams.toString()}`;
 //     })
 //     .catch((err) => {
 //       removeLoading("2");
@@ -1242,7 +1242,7 @@ function setupFinalSubmission() {
       if (addressInput && addressInput.value.trim()) {
         queryParams.set("address", addressInput.value.trim());
       }
-      window.location.href = `/submit-home-submitted?${queryParams.toString()}`;
+      window.location.href = `/submit-agent-success?${queryParams.toString()}`;
     } catch (err) {
       // Reset flag on error so user can retry
       sessionStorage.removeItem("formSubmitted");
