@@ -1230,6 +1230,8 @@ function setupFinalSubmission() {
 
       console.log("Form submitted successfully, keeping submission flag set");
 
+      // Segment tracking removed - now handled on final submission pages only
+
       sessionStorage.setItem("responseData", JSON.stringify(res));
       const queryParams = new URLSearchParams({
         success: res.success,

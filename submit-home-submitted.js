@@ -89,10 +89,12 @@
     document.addEventListener("DOMContentLoaded", function () {
       updateDisplayAddress();
       trackLeadEvent();
+      trackSegmentEvent();
     });
   } else {
     updateDisplayAddress();
     trackLeadEvent();
+    trackSegmentEvent();
   }
 
   // Track Facebook Pixel event based on page
@@ -167,6 +169,130 @@
       console.log("✅ Lead event sent to Facebook Pixel:", eventName);
     } else {
       console.warn("Meta Pixel (fbq) not available for Lead tracking");
+    }
+  }
+
+  // Track Segment event for all successful submissions (homeowners and agents)
+  function trackSegmentEvent() {
+    if (typeof analytics !== "undefined") {
+      // Get UTM parameters
+      const utms = {};
+      [
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_keyword",
+        "utm_content",
+        "utm_term",
+      ].forEach((key) => {
+        const value = localStorage.getItem(key);
+        if (value) {
+          utms[key] = value;
+        }
+      });
+
+      // Get data from sessionStorage
+      const finalBasePayload = sessionStorage.getItem("finalBasePayload");
+      let userData = {};
+      let homeData = {};
+
+      if (finalBasePayload) {
+        try {
+          const parsed = JSON.parse(finalBasePayload);
+          userData = {
+            email: parsed.contactInfo?.email || "",
+            phone: parsed.contactInfo?.phoneNumber || "",
+            firstName: parsed.contactInfo?.firstName || "",
+            lastName: parsed.contactInfo?.lastName || "",
+          };
+          homeData = {
+            home_address: parsed.streetAddress || "",
+          };
+
+          // Use the same robust address handling as Facebook Pixel
+          // Try multiple sources for address in order of preference
+          let finalAddress = "";
+
+          // 1. Try streetAddress from finalBasePayload
+          if (parsed.streetAddress) {
+            const components = [];
+            if (parsed.streetAddress) components.push(parsed.streetAddress);
+            if (parsed.city) components.push(parsed.city);
+            if (parsed.state) components.push(parsed.state);
+            if (parsed.zipCode) components.push(parsed.zipCode);
+            finalAddress = components.join(", ");
+          }
+
+          // 2. Fallback to struct_address from sessionStorage
+          if (!finalAddress) {
+            const structAddress = sessionStorage.getItem("struct_address");
+            if (structAddress) {
+              try {
+                const parsedStruct = JSON.parse(structAddress);
+                if (parsedStruct.formattedAddress) {
+                  finalAddress = parsedStruct.formattedAddress;
+                }
+              } catch (e) {
+                console.warn("Failed to parse struct_address:", e);
+              }
+            }
+          }
+
+          // 3. Fallback to saved_address from sessionStorage
+          if (!finalAddress) {
+            const savedAddress = sessionStorage.getItem("saved_address");
+            if (savedAddress) {
+              finalAddress = savedAddress;
+            }
+          }
+
+          // 4. Fallback to URL parameters
+          if (!finalAddress) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const addressParam = urlParams.get("address");
+            if (addressParam) {
+              finalAddress = decodeURIComponent(addressParam);
+            }
+          }
+
+          // Determine form type based on userType
+          const formType = parsed.userType === "Agent" ? "agent" : "homeowner";
+          const source = parsed.contactInfo?.bonusDiscoverySource || "";
+          const brokerage = parsed.contactInfo?.agentBrokerage || "";
+
+          const segmentData = {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            email: userData.email,
+            phone: userData.phone,
+            source: source,
+            brokerage: brokerage,
+            home_address: finalAddress, // Use the robust address handling
+            form_type: formType,
+            page_url: window.location.href,
+            ...utms,
+            event_id: "lead-" + Date.now(),
+          };
+
+          // Only send on production domains
+          if (
+            window.location.hostname === "bonushomes.com" ||
+            window.location.hostname === "www.bonushomes.com"
+          ) {
+            console.log("✅ Sending Lead Submitted to Segment:", segmentData);
+            analytics.track("Lead Submitted", segmentData);
+          }
+        } catch (e) {
+          console.warn(
+            "Failed to parse finalBasePayload for Segment tracking:",
+            e
+          );
+        }
+      } else {
+        console.warn("No finalBasePayload found for Segment tracking");
+      }
+    } else {
+      console.warn("⚠️ Segment analytics not available");
     }
   }
 

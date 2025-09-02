@@ -480,6 +480,73 @@ function setupUserFormValidation() {
           console.log(
             "Form submitted successfully, keeping submission flag set"
           );
+
+          // Trigger Segment event for agent form submission (error page)
+          if (typeof analytics !== "undefined") {
+            // Get UTM parameters
+            const utms = {};
+            [
+              "utm_source",
+              "utm_medium",
+              "utm_campaign",
+              "utm_keyword",
+              "utm_content",
+              "utm_term",
+            ].forEach((key) => {
+              const value = localStorage.getItem(key);
+              if (value) {
+                utms[key] = value;
+              }
+            });
+
+            // Get form data for Segment
+            const firstName =
+              document.querySelector('[data-input="first-name"]')?.value || "";
+            const lastName =
+              document.querySelector('[data-input="last-name"]')?.value || "";
+            const email =
+              document.querySelector('[data-input="email"]')?.value || "";
+            const phone =
+              document.querySelector('[data-input="phone"]')?.value || "";
+            const brokerage =
+              document.querySelector('[data-input="brokerage"]')?.value || "";
+            const addressInput = document.querySelector(
+              '[data-input="address"]'
+            );
+            const homeAddress =
+              addressInput?.value ||
+              sessionStorage.getItem("saved_address") ||
+              "";
+
+            const segmentData = {
+              first_name: firstName,
+              last_name: lastName,
+              email: email,
+              phone: phone,
+              source: "", // Agent forms don't have discovery source
+              brokerage: brokerage,
+              home_address: homeAddress,
+              form_type: "agent",
+              page_url: window.location.href,
+              ...utms,
+              event_id: "lead-" + Date.now(),
+            };
+
+            // Only send on production domains
+            if (
+              window.location.hostname === "bonushomes.com" ||
+              window.location.hostname === "www.bonushomes.com"
+            ) {
+              console.log(
+                "✅ Sending Lead Submitted to Segment for Agent (Error Page):",
+                segmentData
+              );
+              analytics.track("Lead Submitted", segmentData);
+            }
+          } else {
+            console.warn("⚠️ Segment analytics not available");
+          }
+
           // Show success step
           showSubmitSuccess();
         })

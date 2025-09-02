@@ -212,7 +212,8 @@
 
     // Set up final submission tracking based on page
     if (currentPath === "/form-agent" || currentPath.includes("/form-agent")) {
-      setupAgentFormFinalSubmit();
+      // Agent form now handles tracking internally
+      // No additional tracking needed here
     } else if (currentPath === "/form-v2" || currentPath.includes("/form-v2")) {
       // Form-v2 handles its own tracking internally
       // The form-v2.js file has its own sendSegmentLeadEvent function
@@ -220,7 +221,8 @@
       currentPath === "/form" ||
       (currentPath.includes("/form") && !currentPath.includes("/form-agent"))
     ) {
-      setupHomeownerFormFinalSubmit();
+      // Homeowner form now handles Facebook pixel tracking internally
+      // No additional tracking needed here
     } else if (
       currentPath === "/submit-not-in-zip" ||
       currentPath.includes("/submit-not-in-zip")
@@ -251,67 +253,9 @@
     }
   }
 
-  function setupHomeownerFormFinalSubmit() {
-    const finalSubmitButton = document.querySelector('[data-alt="submit"]');
+  // Homeowner form tracking removed - now handled on success pages
 
-    if (finalSubmitButton) {
-      finalSubmitButton.addEventListener("click", function (event) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentStep = urlParams.get("step");
-
-        // Step 5: Final homeowner form submission
-        if (currentStep === "5") {
-          const isValid =
-            typeof validateFormInput === "function"
-              ? validateFormInput("5")
-              : true;
-          const legalCheckbox = document.querySelector("#legal-checkbox");
-          const legalChecked = legalCheckbox && legalCheckbox.checked;
-
-          if (isValid && legalChecked) {
-            sendFinalSegmentEvent();
-          }
-        }
-        // Step 6: Does not qualify agent pitch submission
-        else if (currentStep === "6") {
-          const legalCheckbox = document.querySelector("#legal-checkbox");
-          const legalChecked = legalCheckbox ? legalCheckbox.checked : true;
-
-          if (legalChecked) {
-            sendFinalSegmentEvent();
-          }
-        }
-      });
-    }
-  }
-
-  function setupAgentFormFinalSubmit() {
-    const submitButton = document.querySelector('[data-alt="submit"]');
-
-    if (submitButton) {
-      submitButton.addEventListener("click", function (event) {
-        const step2 = document.querySelector('[data-step="2"]');
-        const step1 = document.querySelector('[data-step="1"]');
-
-        const isOnStep2 =
-          (step2 && window.getComputedStyle(step2).display !== "none") ||
-          (step1 && window.getComputedStyle(step1).display === "none");
-
-        if (isOnStep2) {
-          const isValid =
-            typeof validateFormInput === "function"
-              ? validateFormInput("2")
-              : true;
-          const legalCheckbox = document.querySelector("#legal-checkbox");
-          const legalChecked = legalCheckbox && legalCheckbox.checked;
-
-          if (isValid && legalChecked) {
-            sendFinalSegmentEvent();
-          }
-        }
-      });
-    }
-  }
+  // Agent form tracking removed - now handled internally
 
   function setupNotInAreaFinalSubmit() {
     const submitButton = document.querySelector('[data-alt="submit"]');
