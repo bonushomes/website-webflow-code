@@ -2309,8 +2309,8 @@ function homeDataValid(data) {
     valid = false;
   }
 
-  if (parseFirstNumberFromRange(data.estimated_value) >= 500000) {
-    console.log("failed for est home value");
+  if (parseFirstNumberFromRange(data.estimated_value) > 550000) {
+    console.log("failed for est home value - over $550,000");
     updateEligibilityCheck("ESTIMATED_VALUE", "Failed");
     valid = false;
   }
