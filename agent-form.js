@@ -810,14 +810,34 @@ async function handleAddressSubmission() {
               locationProfile?.isInPreferredZipCode || false,
             isInOperatedMSA: locationProfile?.isInOperatedMSA || false,
             isInOperatedState: locationProfile?.isInOperatedState || false,
-            eligibilityCheck: "Failed",
+            eligibilityCheck:
+              locationProfile?.isInPreferredZipCode === true
+                ? "Passed"
+                : "Failed",
           },
         };
 
         console.log("blankAgentData (propertyNotFoundError):", blankAgentData);
 
-        basePayload.isQualified = true;
-        basePayload.locationProfile.eligibilityCheck = "Passed";
+        // Validate location profile from error extensions
+        if (locationProfile) {
+          basePayload.locationProfile.isInPreferredZipCode =
+            locationProfile.isInPreferredZipCode || false;
+          basePayload.locationProfile.isInOperatedMSA =
+            locationProfile.isInOperatedMSA || false;
+          basePayload.locationProfile.isInOperatedState =
+            locationProfile.isInOperatedState || false;
+
+          // Only qualify if zip code is preferred
+          basePayload.isQualified =
+            locationProfile.isInPreferredZipCode === true;
+          basePayload.locationProfile.eligibilityCheck = basePayload.isQualified
+            ? "Passed"
+            : "Failed";
+        } else {
+          basePayload.isQualified = false;
+          basePayload.locationProfile.eligibilityCheck = "Failed";
+        }
 
         console.log("basepayload after updates", basePayload);
         // Remove loading spinner
@@ -825,6 +845,13 @@ async function handleAddressSubmission() {
 
         // Set blank agent data to appState
         appState.propertyData = blankAgentData;
+
+        // Also update basePayload to ensure consistency
+        basePayload.streetAddress = blankAgentData.streetAddress;
+        basePayload.city = blankAgentData.city;
+        basePayload.state = blankAgentData.state;
+        basePayload.zipCode = blankAgentData.zipCode;
+        basePayload.locationProfile = { ...blankAgentData.locationProfile };
 
         // Call setupFinalSubmission only if it hasn't been called before
         if (!finalSubmissionSetup) {
@@ -888,6 +915,18 @@ async function handleAddressSubmission() {
 
       // Set blank agent data to appState
       appState.propertyData = blankAgentData;
+
+      // Also update basePayload to ensure consistency
+      basePayload.streetAddress = blankAgentData.streetAddress;
+      basePayload.city = blankAgentData.city;
+      basePayload.state = blankAgentData.state;
+      basePayload.zipCode = blankAgentData.zipCode;
+      // For no property data case, assume location validation failed
+      basePayload.locationProfile.isInPreferredZipCode = false;
+      basePayload.locationProfile.isInOperatedMSA = false;
+      basePayload.locationProfile.isInOperatedState = false;
+      basePayload.locationProfile.eligibilityCheck = "Failed";
+      basePayload.isQualified = false;
 
       // Call setupFinalSubmission only if it hasn't been called before
       if (!finalSubmissionSetup) {
@@ -1468,7 +1507,7 @@ async function submitDataToAPI(propertyData, userData) {
 
   function determineLocationEligibility(data) {
     // Only pass if zip code is preferred - no MSA or State fallback
-    if (data.isInPreferredZipCode) {
+    if (data && data.isInPreferredZipCode === true) {
       return "Passed";
     }
     return "Failed";
