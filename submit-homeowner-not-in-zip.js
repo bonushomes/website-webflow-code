@@ -368,6 +368,103 @@ document.addEventListener("DOMContentLoaded", function () {
     submitDataToAPI(homeDataObject, userData)
       .then((res) => {
         console.log("Form submitted successfully, keeping submission flag set");
+
+        // Trigger Segment event for homeowner form submission (not in zip)
+        if (typeof analytics !== "undefined") {
+          // Get UTM parameters
+          const utms = {};
+          [
+            "utm_source",
+            "utm_medium",
+            "utm_campaign",
+            "utm_keyword",
+            "utm_content",
+            "utm_term",
+          ].forEach((key) => {
+            const value = localStorage.getItem(key);
+            if (value) {
+              utms[key] = value;
+            }
+          });
+
+          // Get form data for Segment
+          const firstName =
+            document.querySelector('[data-input="first-name"]')?.value || "";
+          const lastName =
+            document.querySelector('[data-input="last-name"]')?.value || "";
+          const email =
+            document.querySelector('[data-input="email"]')?.value || "";
+          const phone =
+            document.querySelector('[data-input="phone"]')?.value || "";
+          const source =
+            document.querySelector('[data-input="discovery-source"]')?.value ||
+            "";
+          const addressInput = document.querySelector('[data-input="address"]');
+          const homeAddress =
+            addressInput?.value ||
+            sessionStorage.getItem("saved_address") ||
+            "";
+
+          // Use the same robust address handling as other pages
+          let finalAddress = "";
+
+          // 1. Try address input first
+          if (homeAddress) {
+            finalAddress = homeAddress;
+          }
+
+          // 2. Fallback to struct_address from sessionStorage
+          if (!finalAddress) {
+            const structAddress = sessionStorage.getItem("struct_address");
+            if (structAddress) {
+              try {
+                const parsedStruct = JSON.parse(structAddress);
+                if (parsedStruct.formattedAddress) {
+                  finalAddress = parsedStruct.formattedAddress;
+                }
+              } catch (e) {
+                console.warn("Failed to parse struct_address:", e);
+              }
+            }
+          }
+
+          // 3. Fallback to saved_address from sessionStorage
+          if (!finalAddress) {
+            const savedAddress = sessionStorage.getItem("saved_address");
+            if (savedAddress) {
+              finalAddress = savedAddress;
+            }
+          }
+
+          const segmentData = {
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            phone: phone,
+            source: source,
+            brokerage: "", // Homeowners don't have brokerage
+            home_address: finalAddress,
+            form_type: "homeowner",
+            page_url: window.location.href,
+            ...utms,
+            event_id: "lead-" + Date.now(),
+          };
+
+          // Only send on production domains
+          if (
+            window.location.hostname === "bonushomes.com" ||
+            window.location.hostname === "www.bonushomes.com"
+          ) {
+            console.log(
+              "✅ Sending Lead Submitted to Segment for Homeowner (Not In Zip):",
+              segmentData
+            );
+            analytics.track("Lead Submitted", segmentData);
+          }
+        } else {
+          console.warn("⚠️ Segment analytics not available");
+        }
+
         const url = new URL(window.location);
         url.searchParams.set("submit-success", "true");
         window.history.replaceState({}, "", url);
