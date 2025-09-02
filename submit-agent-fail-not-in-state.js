@@ -513,10 +513,29 @@ function setupUserFormValidation() {
             const addressInput = document.querySelector(
               '[data-input="address"]'
             );
-            const homeAddress =
-              addressInput?.value ||
-              sessionStorage.getItem("saved_address") ||
-              "";
+
+            // FIRST PRIORITY: URL parameters (NEW address user is actually on page for)
+            let homeAddress = "";
+            const urlParams = new URLSearchParams(window.location.search);
+            const addressParam = urlParams.get("address");
+            if (addressParam) {
+              homeAddress = decodeURIComponent(addressParam);
+              console.log("📍 Using URL address parameter:", homeAddress);
+            }
+
+            // Fallback to form input
+            if (!homeAddress) {
+              homeAddress = addressInput?.value || "";
+              if (homeAddress)
+                console.log("📍 Using form input address:", homeAddress);
+            }
+
+            // Fallback to saved_address from sessionStorage
+            if (!homeAddress) {
+              homeAddress = sessionStorage.getItem("saved_address") || "";
+              if (homeAddress)
+                console.log("📍 Using saved_address:", homeAddress);
+            }
 
             const segmentData = {
               first_name: firstName,

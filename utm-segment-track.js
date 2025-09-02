@@ -108,11 +108,28 @@
     const brokerage =
       document.querySelector('[data-input="brokerage"]')?.value || "";
 
-    // Get address from current page OR from saved session data
-    let homeAddress =
-      document.querySelector('[data-input="address"]')?.value || "";
+    // Get address with priority: URL parameters > form input > saved session data
+    let homeAddress = "";
+
+    // 1. FIRST PRIORITY: URL parameters (NEW address user is actually on page for)
+    const urlParams = new URLSearchParams(window.location.search);
+    const addressParam = urlParams.get("address");
+    if (addressParam) {
+      homeAddress = decodeURIComponent(addressParam);
+      console.log("📍 Using URL address parameter:", homeAddress);
+    }
+
+    // 2. Fallback to form input
+    if (!homeAddress) {
+      homeAddress =
+        document.querySelector('[data-input="address"]')?.value || "";
+      if (homeAddress) console.log("📍 Using form input address:", homeAddress);
+    }
+
+    // 3. Fallback to saved session data
     if (!homeAddress) {
       homeAddress = sessionStorage.getItem("saved_address") || "";
+      if (homeAddress) console.log("📍 Using saved_address:", homeAddress);
     }
 
     // Determine form type based on brokerage field existence

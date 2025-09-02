@@ -213,17 +213,26 @@
           // Try multiple sources for address in order of preference
           let finalAddress = "";
 
-          // 1. Try streetAddress from finalBasePayload
-          if (parsed.streetAddress) {
+          // 1. FIRST PRIORITY: URL parameters (NEW address user is actually on page for)
+          const urlParams = new URLSearchParams(window.location.search);
+          const addressParam = urlParams.get("address");
+          if (addressParam) {
+            finalAddress = decodeURIComponent(addressParam);
+            console.log("📍 Using URL address parameter:", finalAddress);
+          }
+
+          // 2. Fallback to streetAddress from finalBasePayload
+          if (!finalAddress && parsed.streetAddress) {
             const components = [];
             if (parsed.streetAddress) components.push(parsed.streetAddress);
             if (parsed.city) components.push(parsed.city);
             if (parsed.state) components.push(parsed.state);
             if (parsed.zipCode) components.push(parsed.zipCode);
             finalAddress = components.join(", ");
+            console.log("📍 Using finalBasePayload address:", finalAddress);
           }
 
-          // 2. Fallback to struct_address from sessionStorage
+          // 3. Fallback to struct_address from sessionStorage
           if (!finalAddress) {
             const structAddress = sessionStorage.getItem("struct_address");
             if (structAddress) {
@@ -231,6 +240,7 @@
                 const parsedStruct = JSON.parse(structAddress);
                 if (parsedStruct.formattedAddress) {
                   finalAddress = parsedStruct.formattedAddress;
+                  console.log("📍 Using struct_address:", finalAddress);
                 }
               } catch (e) {
                 console.warn("Failed to parse struct_address:", e);
@@ -238,20 +248,12 @@
             }
           }
 
-          // 3. Fallback to saved_address from sessionStorage
+          // 4. Fallback to saved_address from sessionStorage
           if (!finalAddress) {
             const savedAddress = sessionStorage.getItem("saved_address");
             if (savedAddress) {
               finalAddress = savedAddress;
-            }
-          }
-
-          // 4. Fallback to URL parameters
-          if (!finalAddress) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const addressParam = urlParams.get("address");
-            if (addressParam) {
-              finalAddress = decodeURIComponent(addressParam);
+              console.log("📍 Using saved_address:", finalAddress);
             }
           }
 

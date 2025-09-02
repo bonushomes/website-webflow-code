@@ -525,8 +525,30 @@
       if (typeof analytics === "undefined") return;
       const utms = getStoredUtms();
       const addressEl = qs(SELECTORS.addressInput);
-      const homeAddress =
-        addressEl?.value || sessionStorage.getItem("saved_address") || "";
+
+      // Get address with priority: URL parameters > form input > saved session data
+      let homeAddress = "";
+
+      // 1. FIRST PRIORITY: URL parameters (NEW address user is actually on page for)
+      const urlParams = new URLSearchParams(window.location.search);
+      const addressParam = urlParams.get("address");
+      if (addressParam) {
+        homeAddress = decodeURIComponent(addressParam);
+        console.log("📍 Using URL address parameter:", homeAddress);
+      }
+
+      // 2. Fallback to form input
+      if (!homeAddress) {
+        homeAddress = addressEl?.value || "";
+        if (homeAddress)
+          console.log("📍 Using form input address:", homeAddress);
+      }
+
+      // 3. Fallback to saved session data
+      if (!homeAddress) {
+        homeAddress = sessionStorage.getItem("saved_address") || "";
+        if (homeAddress) console.log("📍 Using saved_address:", homeAddress);
+      }
       const data = {
         first_name: payload.contactInfo.firstName,
         last_name: payload.contactInfo.lastName,

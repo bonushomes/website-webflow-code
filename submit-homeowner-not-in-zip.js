@@ -408,12 +408,21 @@ document.addEventListener("DOMContentLoaded", function () {
           // Use the same robust address handling as other pages
           let finalAddress = "";
 
-          // 1. Try address input first
-          if (homeAddress) {
-            finalAddress = homeAddress;
+          // 1. FIRST PRIORITY: URL parameters (NEW address user is actually on page for)
+          const urlParams = new URLSearchParams(window.location.search);
+          const addressParam = urlParams.get("address");
+          if (addressParam) {
+            finalAddress = decodeURIComponent(addressParam);
+            console.log("📍 Using URL address parameter:", finalAddress);
           }
 
-          // 2. Fallback to struct_address from sessionStorage
+          // 2. Fallback to address input
+          if (!finalAddress && homeAddress) {
+            finalAddress = homeAddress;
+            console.log("📍 Using address input:", finalAddress);
+          }
+
+          // 3. Fallback to struct_address from sessionStorage
           if (!finalAddress) {
             const structAddress = sessionStorage.getItem("struct_address");
             if (structAddress) {
@@ -421,6 +430,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const parsedStruct = JSON.parse(structAddress);
                 if (parsedStruct.formattedAddress) {
                   finalAddress = parsedStruct.formattedAddress;
+                  console.log("📍 Using struct_address:", finalAddress);
                 }
               } catch (e) {
                 console.warn("Failed to parse struct_address:", e);
@@ -428,11 +438,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
 
-          // 3. Fallback to saved_address from sessionStorage
+          // 4. Fallback to saved_address from sessionStorage
           if (!finalAddress) {
             const savedAddress = sessionStorage.getItem("saved_address");
             if (savedAddress) {
               finalAddress = savedAddress;
+              console.log("📍 Using saved_address:", finalAddress);
             }
           }
 
