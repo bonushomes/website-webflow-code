@@ -1230,6 +1230,22 @@ function setupFinalSubmission() {
 
       console.log("Form submitted successfully, keeping submission flag set");
 
+      // Save the final payload to sessionStorage for success page tracking
+      const finalPayload = {
+        contactInfo: appState.userData,
+        streetAddress: appState.propertyData?.streetAddress || "",
+        city: appState.propertyData?.city || "",
+        state: appState.propertyData?.state || "",
+        zipCode: appState.propertyData?.zipCode || "",
+        homeProfile: appState.propertyData?.homeProfile || [],
+        locationProfile: appState.propertyData?.locationProfile || {},
+        isQualified: appState.propertyData?.isQualified || false,
+      };
+      sessionStorage.setItem("finalBasePayload", JSON.stringify(finalPayload));
+      console.log(
+        "✅ Saved finalBasePayload to sessionStorage for success page tracking"
+      );
+
       // Segment tracking removed - now handled on final submission pages only
 
       sessionStorage.setItem("responseData", JSON.stringify(res));
