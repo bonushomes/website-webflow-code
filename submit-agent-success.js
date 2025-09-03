@@ -95,6 +95,10 @@
           const source = ""; // Agent forms don't have discovery source
           const brokerage = parsed.contactInfo?.brokerage || ""; // Fixed: use 'brokerage' not 'agentBrokerage'
 
+          // Debug: Log what we're actually reading
+          console.log("🔍 DEBUG - userData:", userData);
+          console.log("🔍 DEBUG - parsed.contactInfo:", parsed.contactInfo);
+
           const segmentData = {
             first_name: userData.firstName,
             last_name: userData.lastName,

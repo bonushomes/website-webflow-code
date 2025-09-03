@@ -1215,6 +1215,14 @@ function setupFinalSubmission() {
           .value.trim(),
       };
 
+      // Debug: Log what we're actually capturing
+      console.log(
+        "🔍 DEBUG - Phone field value:",
+        document.querySelector('[data-input="phone"]').value
+      );
+      console.log("🔍 DEBUG - Unformatted phone:", unformattedPhone);
+      console.log("🔍 DEBUG - appState.userData:", appState.userData);
+
       if (!validateFormInput("2")) {
         // Reset flag if validation fails so user can retry
         sessionStorage.removeItem("formSubmitted");
