@@ -1240,6 +1240,11 @@ function setupFinalSubmission() {
         homeProfile: appState.propertyData?.homeProfile || [],
         locationProfile: appState.propertyData?.locationProfile || {},
         isQualified: appState.propertyData?.isQualified || false,
+        // Add missing fields for complete Segment tracking
+        source: "", // Agent forms don't have discovery source
+        brokerage: appState.userData.brokerage || "", // Ensure brokerage is at top level
+        // Add UTM parameters if available
+        utmParams: appState.utmParams || {},
       };
       sessionStorage.setItem("finalBasePayload", JSON.stringify(finalPayload));
       console.log(
