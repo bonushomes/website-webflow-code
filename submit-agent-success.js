@@ -93,7 +93,7 @@
           // This page is only for agents
           const formType = "agent";
           const source = ""; // Agent forms don't have discovery source
-          const brokerage = parsed.contactInfo?.agentBrokerage || "";
+          const brokerage = parsed.contactInfo?.brokerage || ""; // Fixed: use 'brokerage' not 'agentBrokerage'
 
           const segmentData = {
             first_name: userData.firstName,
