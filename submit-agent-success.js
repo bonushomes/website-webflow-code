@@ -35,7 +35,7 @@
           const parsed = JSON.parse(finalBasePayload);
           userData = {
             email: parsed.contactInfo?.email || "",
-            phone: parsed.contactInfo?.phoneNumber || "",
+            phone: parsed.contactInfo?.phone || "", // Fixed: use 'phone' not 'phoneNumber'
             firstName: parsed.contactInfo?.firstName || "",
             lastName: parsed.contactInfo?.lastName || "",
           };
