@@ -753,6 +753,8 @@
     // Handle mortgage interest rate based on selection
     if (isNoMortgage) {
       setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", "None");
+      // Add MORTGAGE_TYPE when no mortgage is selected
+      setHomeProfileValue(payload, "MORTGAGE_TYPE", "None");
     } else if (isUnknownRate) {
       setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", "I don't know");
     } else {
