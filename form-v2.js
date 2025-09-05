@@ -959,10 +959,14 @@
       if (hasInterestRate) {
         if (unknown) {
           unknown.disabled = true;
+          unknown.setAttribute("disabled", "");
+          unknown.classList.add("disabled");
           unknown.checked = false;
         }
         if (noMortgage) {
           noMortgage.disabled = true;
+          noMortgage.setAttribute("disabled", "");
+          noMortgage.classList.add("disabled");
           noMortgage.checked = false;
         }
         if (rate) {
@@ -982,10 +986,14 @@
         }
         if (noMortgage) {
           noMortgage.disabled = true;
+          noMortgage.setAttribute("disabled", "");
+          noMortgage.classList.add("disabled");
           noMortgage.checked = false;
         }
         if (unknown) {
           unknown.disabled = false;
+          unknown.removeAttribute("disabled");
+          unknown.classList.remove("disabled");
         }
       }
       // If no mortgage is checked, disable input and unknown interest checkbox
@@ -999,10 +1007,14 @@
         }
         if (unknown) {
           unknown.disabled = true;
+          unknown.setAttribute("disabled", "");
+          unknown.classList.add("disabled");
           unknown.checked = false;
         }
         if (noMortgage) {
           noMortgage.disabled = false;
+          noMortgage.removeAttribute("disabled");
+          noMortgage.classList.remove("disabled");
         }
       }
       // If none are selected, enable all fields
@@ -1014,9 +1026,13 @@
         }
         if (unknown) {
           unknown.disabled = false;
+          unknown.removeAttribute("disabled");
+          unknown.classList.remove("disabled");
         }
         if (noMortgage) {
           noMortgage.disabled = false;
+          noMortgage.removeAttribute("disabled");
+          noMortgage.classList.remove("disabled");
         }
       }
     }
