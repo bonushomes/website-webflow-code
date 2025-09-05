@@ -957,19 +957,17 @@
       const isUnknown = !!unknown?.checked;
       const isNoMortgage = !!noMortgage?.checked;
 
-      // If interest rate input is filled, disable both checkboxes
+      // If interest rate input is filled, allow checkboxes but clear and disable input when checked
       if (hasInterestRate) {
         if (unknown) {
-          unknown.disabled = true;
-          unknown.setAttribute("disabled", "");
-          unknown.classList.add("disabled");
-          unknown.checked = false;
+          unknown.disabled = false;
+          unknown.removeAttribute("disabled");
+          unknown.classList.remove("disabled");
         }
         if (noMortgage) {
-          noMortgage.disabled = true;
-          noMortgage.setAttribute("disabled", "");
-          noMortgage.classList.add("disabled");
-          noMortgage.checked = false;
+          noMortgage.disabled = false;
+          noMortgage.removeAttribute("disabled");
+          noMortgage.classList.remove("disabled");
         }
         if (rate) {
           rate.disabled = false;
@@ -1044,10 +1042,28 @@
       rate.addEventListener("input", applyMutualExclusivity);
     }
     if (unknown) {
-      unknown.addEventListener("change", applyMutualExclusivity);
+      unknown.addEventListener("change", () => {
+        // If checkbox is checked and input has value, clear and disable input
+        if (unknown.checked && rate && rate.value.trim() !== "") {
+          rate.value = "";
+          rate.disabled = true;
+          rate.setAttribute("disabled", "");
+          rate.classList.add("disabled");
+        }
+        applyMutualExclusivity();
+      });
     }
     if (noMortgage) {
-      noMortgage.addEventListener("change", applyMutualExclusivity);
+      noMortgage.addEventListener("change", () => {
+        // If checkbox is checked and input has value, clear and disable input
+        if (noMortgage.checked && rate && rate.value.trim() !== "") {
+          rate.value = "";
+          rate.disabled = true;
+          rate.setAttribute("disabled", "");
+          rate.classList.add("disabled");
+        }
+        applyMutualExclusivity();
+      });
     }
 
     // Apply initial state
