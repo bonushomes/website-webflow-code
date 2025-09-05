@@ -1725,7 +1725,7 @@ function setupUserFormValidation() {
     }
   });
 
-  // The main validation function for Step 2
+ttttttte main validation function for Step 2
   function validateInputs() {
     let allValid = true;
 

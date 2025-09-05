@@ -29,6 +29,7 @@
     estimatedInterestRate: '[data-input="estimated-interest-rate"]',
     monthsToMove: '[data-input="months-to-move"]',
     unknownInterest: '[data-input="unknown-interest"]',
+    noMortgage: '[data-input="no-mortgage"]',
     // Step 3 fields
     firstName: '[data-input="first-name"]',
     lastName: '[data-input="last-name"]',
@@ -352,6 +353,7 @@
     const hv = qs(SELECTORS.homeValueEst);
     const rate = qs(SELECTORS.estimatedInterestRate);
     const unknown = qs(SELECTORS.unknownInterest);
+    const noMortgage = qs(SELECTORS.noMortgage);
     const move = qs(SELECTORS.monthsToMove);
 
     let valid = true;
@@ -367,14 +369,47 @@
       move.classList.toggle("is-valid", ok);
       if (!ok) valid = false;
     }
-    if (rate) {
-      const normalized = normalizeInterestRate(rate.value);
-      const isUnknown = !!unknown?.checked;
-      const ok = isUnknown || !!normalized;
-      rate.classList.toggle("is-invalid", !ok);
-      rate.classList.toggle("is-valid", ok);
-      if (!ok) valid = false;
+
+    // Validate mortgage interest rate (at least one option must be selected)
+    const hasInterestRate = rate && rate.value.trim() !== "";
+    const isUnknown = !!unknown?.checked;
+    const isNoMortgage = !!noMortgage?.checked;
+    const hasMortgageInfo = hasInterestRate || isUnknown || isNoMortgage;
+
+    if (!hasMortgageInfo) {
+      // Mark all mortgage fields as invalid if none are selected
+      if (rate) {
+        rate.classList.add("is-invalid");
+        rate.classList.remove("is-valid");
+      }
+      if (unknown) {
+        unknown.classList.add("is-invalid");
+        unknown.classList.remove("is-valid");
+      }
+      if (noMortgage) {
+        noMortgage.classList.add("is-invalid");
+        noMortgage.classList.remove("is-valid");
+      }
+      valid = false;
+    } else {
+      // Mark selected field as valid
+      if (hasInterestRate && rate) {
+        const normalized = normalizeInterestRate(rate.value);
+        const ok = !!normalized;
+        rate.classList.toggle("is-invalid", !ok);
+        rate.classList.toggle("is-valid", ok);
+        if (!ok) valid = false;
+      }
+      if (isUnknown && unknown) {
+        unknown.classList.remove("is-invalid");
+        unknown.classList.add("is-valid");
+      }
+      if (isNoMortgage && noMortgage) {
+        noMortgage.classList.remove("is-invalid");
+        noMortgage.classList.add("is-valid");
+      }
     }
+
     return valid;
   }
 
@@ -575,6 +610,17 @@
             normalizeInterestRate(qs(SELECTORS.estimatedInterestRate)?.value) ||
             "";
           const isUnknownRate = !!qs(SELECTORS.unknownInterest)?.checked;
+          const isNoMortgage = !!qs(SELECTORS.noMortgage)?.checked;
+
+          // Determine interest rate value for Facebook pixel
+          let fbInterestRate = "";
+          if (isNoMortgage) {
+            fbInterestRate = "None";
+          } else if (isUnknownRate) {
+            fbInterestRate = "Unknown";
+          } else {
+            fbInterestRate = interestRate;
+          }
 
           const fbPayload = {
             action_source: "website",
@@ -592,7 +638,7 @@
               form_type: data.form_type,
               source: data.source,
               home_value: homeValue,
-              interest_rate: isUnknownRate ? "Unknown" : interestRate,
+              interest_rate: fbInterestRate,
             },
             locale: navigator.language,
             deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -699,13 +745,20 @@
       qs(SELECTORS.estimatedInterestRate)?.value
     );
     const isUnknownRate = !!qs(SELECTORS.unknownInterest)?.checked;
+    const isNoMortgage = !!qs(SELECTORS.noMortgage)?.checked;
     const move = qs(SELECTORS.monthsToMove)?.value || "";
+
     setHomeProfileValue(payload, "ESTIMATED_VALUE", hv || "");
-    setHomeProfileValue(
-      payload,
-      "MORTGAGE_INTEREST_RATE",
-      isUnknownRate ? "I don't know" : rate || ""
-    );
+
+    // Handle mortgage interest rate based on selection
+    if (isNoMortgage) {
+      setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", "None");
+    } else if (isUnknownRate) {
+      setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", "I don't know");
+    } else {
+      setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", rate || "");
+    }
+
     setHomeProfileValue(payload, "TIME_TO_MOVE", move || "");
 
     // Step 3 data
@@ -890,31 +943,97 @@
   function wireStep2() {
     const btn = qs(SELECTORS.step2NextBtn);
     if (!btn) return;
-    // Unknown interest toggling
+    // Mortgage interest rate mutual exclusivity
     const unknown = qs(SELECTORS.unknownInterest);
     const rate = qs(SELECTORS.estimatedInterestRate);
+    const noMortgage = qs(SELECTORS.noMortgage);
     const hv = qs(SELECTORS.homeValueEst);
     const move = qs(SELECTORS.monthsToMove);
-    function applyUnknownState() {
+
+    function applyMutualExclusivity() {
+      const hasInterestRate = rate && rate.value.trim() !== "";
       const isUnknown = !!unknown?.checked;
-      if (rate) {
-        if (isUnknown) {
-          rate.disabled = true;
-          rate.setAttribute("disabled", "");
-          rate.classList.add("disabled");
-          rate.value = "";
-          rate.classList.remove("is-invalid");
-        } else {
+      const isNoMortgage = !!noMortgage?.checked;
+
+      // If interest rate input is filled, disable both checkboxes
+      if (hasInterestRate) {
+        if (unknown) {
+          unknown.disabled = true;
+          unknown.checked = false;
+        }
+        if (noMortgage) {
+          noMortgage.disabled = true;
+          noMortgage.checked = false;
+        }
+        if (rate) {
           rate.disabled = false;
           rate.removeAttribute("disabled");
           rate.classList.remove("disabled");
         }
       }
+      // If unknown interest is checked, disable input and no-mortgage checkbox
+      else if (isUnknown) {
+        if (rate) {
+          rate.disabled = true;
+          rate.setAttribute("disabled", "");
+          rate.classList.add("disabled");
+          rate.value = "";
+          rate.classList.remove("is-invalid");
+        }
+        if (noMortgage) {
+          noMortgage.disabled = true;
+          noMortgage.checked = false;
+        }
+        if (unknown) {
+          unknown.disabled = false;
+        }
+      }
+      // If no mortgage is checked, disable input and unknown interest checkbox
+      else if (isNoMortgage) {
+        if (rate) {
+          rate.disabled = true;
+          rate.setAttribute("disabled", "");
+          rate.classList.add("disabled");
+          rate.value = "";
+          rate.classList.remove("is-invalid");
+        }
+        if (unknown) {
+          unknown.disabled = true;
+          unknown.checked = false;
+        }
+        if (noMortgage) {
+          noMortgage.disabled = false;
+        }
+      }
+      // If none are selected, enable all fields
+      else {
+        if (rate) {
+          rate.disabled = false;
+          rate.removeAttribute("disabled");
+          rate.classList.remove("disabled");
+        }
+        if (unknown) {
+          unknown.disabled = false;
+        }
+        if (noMortgage) {
+          noMortgage.disabled = false;
+        }
+      }
+    }
+
+    // Add event listeners for mutual exclusivity
+    if (rate) {
+      rate.addEventListener("input", applyMutualExclusivity);
     }
     if (unknown) {
-      unknown.addEventListener("change", applyUnknownState);
-      applyUnknownState();
+      unknown.addEventListener("change", applyMutualExclusivity);
     }
+    if (noMortgage) {
+      noMortgage.addEventListener("change", applyMutualExclusivity);
+    }
+
+    // Apply initial state
+    applyMutualExclusivity();
     // Auto-format percent during editing (no % while typing)
     // Rules:
     // - digits only; ignore non-digits
