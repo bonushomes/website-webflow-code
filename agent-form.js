@@ -884,7 +884,13 @@ async function handleAddressSubmission() {
         setupFinalSubmission();
         finalSubmissionSetup = true;
       }
-      window.location.href = "/submit-agent-fail-not-in-state";
+      // Add address to query params for fail redirect
+      const addressInput = document.querySelector('[data-input="address"]');
+      const failQueryParams = new URLSearchParams();
+      if (addressInput && addressInput.value.trim()) {
+        failQueryParams.set("address", addressInput.value.trim());
+      }
+      window.location.href = `/submit-agent-fail-not-in-state?${failQueryParams.toString()}`;
       return;
     }
 
