@@ -841,9 +841,45 @@
       }
       console.log("🔍 DEBUG: Final locationProfile:", payload.locationProfile);
     }
-    payload.isQualified = !!eligible;
-    if (!eligible) {
-      payload.reasonUnqualified = "FailedLocationCheck";
+
+    // Check home value qualification (below $500k = qualified, $500k+ = unqualified)
+    const homeValue = qs(SELECTORS.homeValueEst)?.value || "";
+    let homeValueQualified = true; // Default to qualified if no value selected
+
+    if (homeValue) {
+      // Extract numeric value from home value string (e.g., "$500,000 - $550,000" -> 500000)
+      const numericMatch = homeValue.match(/\$?([0-9,]+)/);
+      if (numericMatch) {
+        const numericValue = parseInt(numericMatch[1].replace(/,/g, ""));
+        homeValueQualified = numericValue < 500000;
+        console.log("🔍 DEBUG: Home value check:", {
+          homeValue,
+          numericValue,
+          homeValueQualified,
+        });
+      }
+    }
+
+    // Update ESTIMATED_VALUE eligibility check
+    const estimatedValueItem = payload.homeProfile.find(
+      (item) => item.id === "ESTIMATED_VALUE"
+    );
+    if (estimatedValueItem) {
+      estimatedValueItem.eligibilityCheck = homeValueQualified
+        ? "Passed"
+        : "Failed";
+    }
+
+    // Final qualification: must pass both location AND home value checks
+    const finalQualified = eligible && homeValueQualified;
+    payload.isQualified = !!finalQualified;
+
+    if (!finalQualified) {
+      if (!eligible) {
+        payload.reasonUnqualified = "FailedLocationCheck";
+      } else if (!homeValueQualified) {
+        payload.reasonUnqualified = "FailedHomeValueCheck";
+      }
     }
 
     sessionStorage.setItem(STORAGE_KEYS.basePayload, JSON.stringify(payload));
