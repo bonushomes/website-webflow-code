@@ -908,15 +908,8 @@ function prefillForm(data) {
       return rate;
     },
     "30-year-fixed": (val) => {
-      if (!propertyData.mortgages || propertyData.mortgages.length === 0) {
-        // logWithDetails("FIELD_MAPPING", "No mortgage data found for term type");
-        return "No";
-      }
-      const mortgage = propertyData.mortgages[0];
-      const isThirtyYearFixed =
-        mortgage.term === "30" && mortgage.loanType === "Fixed";
-
-      return isThirtyYearFixed ? "Yes" : "No";
+      // Don't prefill this field - let it default to "Select One..."
+      return "";
     },
     "home-value-est": (val) => {
       if (
