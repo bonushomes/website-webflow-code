@@ -1791,7 +1791,6 @@ function setupUserFormValidation() {
     }
     input.classList.remove("is-valid");
   }
-  asdfasf;
   function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(String(email).toLowerCase());
