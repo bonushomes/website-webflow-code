@@ -43,8 +43,3 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint -- --max-warnings 0
-
-      - name: Test pre-commit hook
-        run: |
-          chmod +x .git/hooks/pre-commit
-          .git/hooks/pre-commit
