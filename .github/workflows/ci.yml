@@ -24,25 +24,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-    - name: Check JavaScript syntax
-      run: |
-        echo "🔍 Checking JavaScript syntax..."
-        for file in *.js; do
-          if [ -f "$file" ]; then
-            echo "Checking $file..."
-            if ! node -c "$file"; then
-              echo "❌ Syntax error found in $file"
-              echo "Error details:"
-              node -c "$file" 2>&1 | sed 's/^/  /'
-              exit 1
-            else
-              echo "✅ $file syntax is valid"
+      - name: Check JavaScript syntax
+        run: |
+          echo "🔍 Checking JavaScript syntax..."
+          for file in *.js; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              if ! node -c "$file"; then
+                echo "❌ Syntax error found in $file"
+                echo "Error details:"
+                node -c "$file" 2>&1 | sed 's/^/  /'
+                exit 1
+              else
+                echo "✅ $file syntax is valid"
+              fi
             fi
-          fi
-        done
+          done
 
-    - name: Run ESLint
-      run: npm run lint -- --max-warnings 0
+      - name: Run ESLint
+        run: npm run lint -- --max-warnings 0
 
       - name: Test pre-commit hook
         run: |
