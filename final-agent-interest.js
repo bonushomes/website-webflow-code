@@ -69,7 +69,7 @@ function validateInput(input) {
         validationState[type] = false;
       }
       break;
-    case "phone":
+    case "phone": {
       const formattedPhone = formatPhoneNumber(value);
       input.value = formattedPhone;
       if (formattedPhone.length === 14) {
@@ -82,6 +82,7 @@ function validateInput(input) {
         validationState[type] = false;
       }
       break;
+    }
   }
 
   return validationState[type];

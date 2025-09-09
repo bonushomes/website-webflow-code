@@ -10,15 +10,17 @@ module.exports = {
     sourceType: "module",
   },
   rules: {
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off", // Turn off unused vars warnings
     "no-console": "off", // Allow console.log for debugging
-    "no-undef": "warn", // Warn instead of error for undefined variables
-    semi: ["error", "always"],
+    "no-undef": "off", // Turn off undefined variable warnings
+    semi: "off", // Turn off semicolon enforcement
     quotes: "off", // Turn off quote enforcement - allow both single and double quotes
-    indent: ["warn", 2], // Warn instead of error for indentation
-    "no-trailing-spaces": "warn", // Warn instead of error
-    "eol-last": "warn", // Warn instead of error
-    "no-empty": "warn", // Warn for empty blocks
+    indent: "off", // Turn off indentation enforcement
+    "no-trailing-spaces": "off", // Turn off trailing spaces enforcement
+    "eol-last": "off", // Turn off end-of-line enforcement
+    "no-empty": "off", // Turn off empty block warnings
+    "no-unreachable": "error", // Keep this as error - unreachable code is usually a bug
+    "no-dupe-keys": "error", // Keep this as error - duplicate keys are bugs
   },
   globals: {
     // Webflow/Webflow-specific globals

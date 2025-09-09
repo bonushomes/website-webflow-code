@@ -252,7 +252,7 @@ function initAutocomplete() {
       if (!unit) {
         const addressInputValue = addressInput.value;
         const unitMatch = addressInputValue.match(
-          /(?:unit|apt|suite)\s*\#?\s*(\w+)/i
+          /(?:unit|apt|suite)\s*#?\s*(\w+)/i
         );
         if (unitMatch) {
           unit = unitMatch[1];
