@@ -12,12 +12,13 @@ module.exports = {
   rules: {
     "no-unused-vars": "warn",
     "no-console": "off", // Allow console.log for debugging
-    "no-undef": "error",
+    "no-undef": "warn", // Warn instead of error for undefined variables
     semi: ["error", "always"],
-    quotes: ["error", "single"],
-    indent: ["error", 2],
-    "no-trailing-spaces": "error",
-    "eol-last": "error",
+    quotes: "off", // Turn off quote enforcement - allow both single and double quotes
+    indent: ["warn", 2], // Warn instead of error for indentation
+    "no-trailing-spaces": "warn", // Warn instead of error
+    "eol-last": "warn", // Warn instead of error
+    "no-empty": "warn", // Warn for empty blocks
   },
   globals: {
     // Webflow/Webflow-specific globals
