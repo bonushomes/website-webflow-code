@@ -1795,6 +1795,7 @@ function setupUserFormValidation() {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(String(email).toLowerCase());
   }
+  sadfasdf;
 
   // function handlePhoneInputFormat(phoneInputField) {
   //   const numericPhone = phoneInputField.value.replace(/\D/g, "");
