@@ -1465,7 +1465,7 @@ function validateAndBuildHomeProfile(propertyData) {
 
   // Ensure value has "%" appended
   const formattedRate =
-    propertyData.mortgages && propertyData.mortgages.length > 0
+    propertyData?.mortgages?.length > 0
       ? `${parseFloat(propertyData.mortgages[0].interestRate).toFixed(2)}%`
       : "";
 
@@ -1477,7 +1477,7 @@ function validateAndBuildHomeProfile(propertyData) {
 
   // MORTGAGE_LOAN_TYPE: Handle undefined mortgages
   const loanTypeValue =
-    propertyData.mortgages && propertyData.mortgages.length > 0
+    propertyData?.mortgages?.length > 0
       ? propertyData.mortgages[0]?.loanType || "Unknown"
       : "Unknown"; // Default to "Unknown"
   const loanTypePassed =
@@ -1495,7 +1495,7 @@ function validateAndBuildHomeProfile(propertyData) {
 
   // MORTGAGE_TERM: Handle undefined mortgages
   const termValue =
-    propertyData.mortgages && propertyData.mortgages.length > 0
+    propertyData?.mortgages?.length > 0
       ? parseInt(propertyData.mortgages[0].term) || 0
       : 0; // Default to 0
   const termPassed = termValue === 30 ? "Passed" : "Failed";
