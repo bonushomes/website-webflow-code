@@ -126,12 +126,12 @@
     if (parts.length < 2) return null;
     const streetAddress = parts[0];
     const last = parts[parts.length - 1];
-    
+
     // Try to match state abbreviation + zip first (e.g., "TN 37207")
     let m = last.match(/([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/);
     let state = "";
     let zip = "";
-    
+
     if (m) {
       state = m[1];
       zip = m[2];
@@ -145,11 +145,10 @@
         state = transformStateToAbbrev(fullStateName);
       }
     }
-    
+
     const city = parts.slice(1, parts.length - 1).join(", ");
     return { streetAddress, city, state, zipCode: zip };
   }
-
 
   function normalizeInterestRate(value) {
     if (!value) return "";
@@ -726,7 +725,15 @@
     // Try to get address from URL parameters first (highest priority)
     const urlParams = new URLSearchParams(window.location.search);
     const addressParam = urlParams.get("address");
-    const addressToParse = addressParam ? decodeURIComponent(addressParam) : rawAddress;
+    
+    // Try to get address from display elements as fallback
+    const displayAddressEls = qsa(SELECTORS.displayAddress);
+    const displayAddress = displayAddressEls.length > 0 ? displayAddressEls[0].textContent.trim() : "";
+    console.log("🔍 DEBUG: displayAddress:", displayAddress);
+    
+    const addressToParse = addressParam
+      ? decodeURIComponent(addressParam)
+      : rawAddress || displayAddress;
     console.log("🔍 DEBUG: addressToParse:", addressToParse);
 
     if (struct?.components) {
@@ -744,7 +751,10 @@
         zipCode: payload.zipCode,
       });
     } else if (addressToParse) {
-      console.log("🔍 DEBUG: No struct, trying parseAddressFromInput with:", addressToParse);
+      console.log(
+        "🔍 DEBUG: No struct, trying parseAddressFromInput with:",
+        addressToParse
+      );
       const parsed = parseAddressFromInput(addressToParse);
       console.log("🔍 DEBUG: parsed result:", parsed);
       if (parsed) {
