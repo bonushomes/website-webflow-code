@@ -711,12 +711,6 @@
             campaign: "",
           };
 
-    // Add UTM parameters to payload (matching old form behavior)
-    const payloadWithUtm = {
-      ...payload,
-      utmParams,
-    };
-
     // Address fields - try multiple sources
     const struct = getStructAddressFromSession();
     console.log("🔍 DEBUG: struct from session:", struct);
@@ -896,6 +890,12 @@
 
     sessionStorage.setItem(STORAGE_KEYS.basePayload, JSON.stringify(payload));
 
+    // Add UTM parameters to payload (matching old form behavior) - AFTER all payload population
+    const payloadWithUtm = {
+      ...payload,
+      utmParams,
+    };
+
     showLoading(SELECTORS.step3);
     // Normalize payload shape per endpoint requirements
     if (!payload.reasonUnqualified) {
@@ -920,7 +920,7 @@
         streetAddress: payloadWithUtm.streetAddress,
         city: payloadWithUtm.city,
         state: payloadWithUtm.state,
-        zipCode: payloadWithUtm.zipCode
+        zipCode: payloadWithUtm.zipCode,
       });
       try {
         console.log(
