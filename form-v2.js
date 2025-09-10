@@ -886,6 +886,9 @@
     // Only add reasonUnqualified if not qualified
     if (!eligible) {
       payload.reasonUnqualified = "FailedLocationCheck";
+    } else {
+      // Remove reasonUnqualified field entirely when qualified
+      delete payload.reasonUnqualified;
     }
 
     sessionStorage.setItem(STORAGE_KEYS.basePayload, JSON.stringify(payload));
