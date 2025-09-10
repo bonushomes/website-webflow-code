@@ -126,11 +126,36 @@
     if (parts.length < 2) return null;
     const streetAddress = parts[0];
     const last = parts[parts.length - 1];
-    const m = last.match(/([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/);
-    const state = m ? m[1] : "";
-    const zip = m ? m[2] : "";
+    
+    // Try to match state abbreviation + zip first (e.g., "TN 37207")
+    let m = last.match(/([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+    let state = "";
+    let zip = "";
+    
+    if (m) {
+      state = m[1];
+      zip = m[2];
+    } else {
+      // Try to match full state name + zip (e.g., "Tennessee 37207")
+      m = last.match(/([A-Za-z\s]+)\s+(\d{5}(?:-\d{4})?)$/);
+      if (m) {
+        const fullStateName = m[1].trim();
+        zip = m[2];
+        // Convert full state name to abbreviation
+        state = transformStateToAbbrev(fullStateName);
+      }
+    }
+    
     const city = parts.slice(1, parts.length - 1).join(", ");
     return { streetAddress, city, state, zipCode: zip };
+  }
+
+  // Temporary test function to verify address parsing fix
+  function testAddressParsing() {
+    const testAddress = "2421 Solomon Lane, Nashville, Tennessee 37207";
+    const result = parseAddressFromInput(testAddress);
+    console.log("🧪 TEST: Address parsing result for", testAddress, ":", result);
+    return result;
   }
 
   function normalizeInterestRate(value) {
@@ -1509,6 +1534,9 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
+      // Test address parsing fix
+      testAddressParsing();
+      
       initializeVisibility();
       wireStep1();
       wireStep2();
