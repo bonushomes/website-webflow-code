@@ -725,12 +725,15 @@
     // Try to get address from URL parameters first (highest priority)
     const urlParams = new URLSearchParams(window.location.search);
     const addressParam = urlParams.get("address");
-    
+
     // Try to get address from display elements as fallback
     const displayAddressEls = qsa(SELECTORS.displayAddress);
-    const displayAddress = displayAddressEls.length > 0 ? displayAddressEls[0].textContent.trim() : "";
+    const displayAddress =
+      displayAddressEls.length > 0
+        ? displayAddressEls[0].textContent.trim()
+        : "";
     console.log("🔍 DEBUG: displayAddress:", displayAddress);
-    
+
     const addressToParse = addressParam
       ? decodeURIComponent(addressParam)
       : rawAddress || displayAddress;
