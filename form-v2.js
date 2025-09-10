@@ -734,11 +734,19 @@
         : "";
     console.log("🔍 DEBUG: displayAddress:", displayAddress);
     console.log("🔍 DEBUG: displayAddressEls found:", displayAddressEls.length);
-    console.log("🔍 DEBUG: displayAddressEls content:", displayAddressEls.map(el => el.textContent));
-    
+    console.log(
+      "🔍 DEBUG: displayAddressEls content:",
+      displayAddressEls.map((el) => el.textContent)
+    );
+
     // Also try to get address from any element that might contain "Your Address:" text
-    const addressTextElements = qsa('*').filter(el => el.textContent && el.textContent.includes('Your Address:'));
-    const addressFromText = addressTextElements.length > 0 ? addressTextElements[0].textContent.replace('Your Address:', '').trim() : "";
+    const addressTextElements = qsa("*").filter(
+      (el) => el.textContent && el.textContent.includes("Your Address:")
+    );
+    const addressFromText =
+      addressTextElements.length > 0
+        ? addressTextElements[0].textContent.replace("Your Address:", "").trim()
+        : "";
     console.log("🔍 DEBUG: addressFromText:", addressFromText);
 
     const addressToParse = addressParam
@@ -907,12 +915,22 @@
     dataLayerPush("Contact_Info_Submit");
     try {
       // Log final payload for debugging
+      console.log("🔍 DEBUG: Final payload object:", payloadWithUtm);
+      console.log("🔍 DEBUG: Address fields in payload:", {
+        streetAddress: payloadWithUtm.streetAddress,
+        city: payloadWithUtm.city,
+        state: payloadWithUtm.state,
+        zipCode: payloadWithUtm.zipCode
+      });
       try {
         console.log(
           "Final Payload being sent to the API:",
           JSON.stringify(payloadWithUtm, null, 2)
         );
-      } catch (_) {}
+      } catch (err) {
+        console.error("Error stringifying payload:", err);
+        console.log("Raw payload:", payloadWithUtm);
+      }
       const endpoint = ENDPOINTS.submitLead;
       const res = await fetch(endpoint, {
         method: "POST",
