@@ -733,10 +733,17 @@
         ? displayAddressEls[0].textContent.trim()
         : "";
     console.log("🔍 DEBUG: displayAddress:", displayAddress);
+    console.log("🔍 DEBUG: displayAddressEls found:", displayAddressEls.length);
+    console.log("🔍 DEBUG: displayAddressEls content:", displayAddressEls.map(el => el.textContent));
+    
+    // Also try to get address from any element that might contain "Your Address:" text
+    const addressTextElements = qsa('*').filter(el => el.textContent && el.textContent.includes('Your Address:'));
+    const addressFromText = addressTextElements.length > 0 ? addressTextElements[0].textContent.replace('Your Address:', '').trim() : "";
+    console.log("🔍 DEBUG: addressFromText:", addressFromText);
 
     const addressToParse = addressParam
       ? decodeURIComponent(addressParam)
-      : rawAddress || displayAddress;
+      : rawAddress || displayAddress || addressFromText;
     console.log("🔍 DEBUG: addressToParse:", addressToParse);
 
     if (struct?.components) {
