@@ -150,13 +150,6 @@
     return { streetAddress, city, state, zipCode: zip };
   }
 
-  // Temporary test function to verify address parsing fix
-  function testAddressParsing() {
-    const testAddress = "2421 Solomon Lane, Nashville, Tennessee 37207";
-    const result = parseAddressFromInput(testAddress);
-    console.log("🧪 TEST: Address parsing result for", testAddress, ":", result);
-    return result;
-  }
 
   function normalizeInterestRate(value) {
     if (!value) return "";
@@ -725,10 +718,16 @@
       utmParams,
     };
 
-    // Address fields
+    // Address fields - try multiple sources
     const struct = getStructAddressFromSession();
     console.log("🔍 DEBUG: struct from session:", struct);
     console.log("🔍 DEBUG: rawAddress:", rawAddress);
+
+    // Try to get address from URL parameters first (highest priority)
+    const urlParams = new URLSearchParams(window.location.search);
+    const addressParam = urlParams.get("address");
+    const addressToParse = addressParam ? decodeURIComponent(addressParam) : rawAddress;
+    console.log("🔍 DEBUG: addressToParse:", addressToParse);
 
     if (struct?.components) {
       console.log("🔍 DEBUG: Using struct components");
@@ -744,9 +743,9 @@
         state: payload.state,
         zipCode: payload.zipCode,
       });
-    } else {
-      console.log("🔍 DEBUG: No struct, trying parseAddressFromInput");
-      const parsed = parseAddressFromInput(rawAddress);
+    } else if (addressToParse) {
+      console.log("🔍 DEBUG: No struct, trying parseAddressFromInput with:", addressToParse);
+      const parsed = parseAddressFromInput(addressToParse);
       console.log("🔍 DEBUG: parsed result:", parsed);
       if (parsed) {
         payload.streetAddress = parsed.streetAddress;
@@ -762,6 +761,8 @@
       } else {
         console.log("🔍 DEBUG: Address parsing failed - all fields empty");
       }
+    } else {
+      console.log("🔍 DEBUG: No address available to parse");
     }
 
     // Step 2 data
@@ -814,35 +815,26 @@
     console.log("🔍 DEBUG: storedLP:", storedLP);
     let eligible = false;
     if (storedLP) {
-      const lpPreferred = !!storedLP.isInPreferredZipCode;
-      const lpMSA = !!storedLP.isInOperatedMSA;
-      const lpState = !!storedLP.isInOperatedState;
-
-      // Mirror stored location profile exactly (do not modify booleans)
+      // Use the actual API response values (don't convert to boolean)
       payload.locationProfile = {
-        isInPreferredZipCode: lpPreferred,
-        isInOperatedMSA: lpMSA,
-        isInOperatedState: lpState,
-        // Ensure eligibilityCheck is always present
-        eligibilityCheck: storedLP.eligibilityCheck,
+        isInPreferredZipCode: storedLP.isInPreferredZipCode,
+        isInOperatedMSA: storedLP.isInOperatedMSA,
+        isInOperatedState: storedLP.isInOperatedState,
+        eligibilityCheck: storedLP.eligibilityCheck || "Passed",
       };
 
-      // Eligibility per matrix - only pass if zip code is preferred
-      if (payload.userType === "Agent") {
-        eligible = lpPreferred; // Only preferred zip code
-      } else {
-        // Homeowner - only preferred zip code
-        eligible = lpPreferred;
-      }
-
-      // If API didn't provide eligibilityCheck, derive from matrix so field is always present
-      if (typeof payload.locationProfile.eligibilityCheck === "undefined") {
-        payload.locationProfile.eligibilityCheck = eligible
-          ? "Passed"
-          : "Failed";
-      }
-
-      // Keep API's eligibilityCheck untouched; matrix only affects isQualified
+      // Eligibility is based on the API response - if all location checks are true, then eligible
+      eligible = !!(
+        storedLP.isInPreferredZipCode &&
+        storedLP.isInOperatedMSA &&
+        storedLP.isInOperatedState
+      );
+      console.log("🔍 DEBUG: Eligibility based on API response:", {
+        isInPreferredZipCode: storedLP.isInPreferredZipCode,
+        isInOperatedMSA: storedLP.isInOperatedMSA,
+        isInOperatedState: storedLP.isInOperatedState,
+        eligible,
+      });
     } else {
       // Fallback to zipEligible flag
       console.log("🔍 DEBUG: No storedLP, using fallback");
@@ -856,55 +848,22 @@
       }
       payload.locationProfile.eligibilityCheck = eligible ? "Passed" : "Failed";
       payload.locationProfile.isInPreferredZipCode = !!eligible;
-      // Only set MSA and State to true if zip code is preferred
-      if (eligible) {
-        payload.locationProfile.isInOperatedMSA = true;
-        payload.locationProfile.isInOperatedState = true;
-      } else {
-        payload.locationProfile.isInOperatedMSA = false;
-        payload.locationProfile.isInOperatedState = false;
-      }
+      payload.locationProfile.isInOperatedMSA = !!eligible;
+      payload.locationProfile.isInOperatedState = !!eligible;
       console.log("🔍 DEBUG: Final locationProfile:", payload.locationProfile);
     }
 
-    // Check home value qualification (below $500k = qualified, $500k+ = unqualified)
-    const homeValue = qs(SELECTORS.homeValueEst)?.value || "";
-    let homeValueQualified = true; // Default to qualified if no value selected
+    // Set all home profile eligibility checks to "Ignored" (no evaluation on website)
+    payload.homeProfile.forEach((item) => {
+      item.eligibilityCheck = "Ignored";
+    });
 
-    if (homeValue) {
-      // Extract numeric value from home value string (e.g., "$500,000 - $550,000" -> 500000)
-      const numericMatch = homeValue.match(/\$?([0-9,]+)/);
-      if (numericMatch) {
-        const numericValue = parseInt(numericMatch[1].replace(/,/g, ""));
-        homeValueQualified = numericValue < 500000;
-        console.log("🔍 DEBUG: Home value check:", {
-          homeValue,
-          numericValue,
-          homeValueQualified,
-        });
-      }
-    }
+    // Final qualification: based on location eligibility only (no home value check)
+    payload.isQualified = !!eligible;
 
-    // Update ESTIMATED_VALUE eligibility check
-    const estimatedValueItem = payload.homeProfile.find(
-      (item) => item.id === "ESTIMATED_VALUE"
-    );
-    if (estimatedValueItem) {
-      estimatedValueItem.eligibilityCheck = homeValueQualified
-        ? "Passed"
-        : "Failed";
-    }
-
-    // Final qualification: must pass both location AND home value checks
-    const finalQualified = eligible && homeValueQualified;
-    payload.isQualified = !!finalQualified;
-
-    if (!finalQualified) {
-      if (!eligible) {
-        payload.reasonUnqualified = "FailedLocationCheck";
-      } else if (!homeValueQualified) {
-        payload.reasonUnqualified = "FailedHomeValueCheck";
-      }
+    // Only add reasonUnqualified if not qualified
+    if (!eligible) {
+      payload.reasonUnqualified = "FailedLocationCheck";
     }
 
     sessionStorage.setItem(STORAGE_KEYS.basePayload, JSON.stringify(payload));
@@ -1534,9 +1493,6 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      // Test address parsing fix
-      testAddressParsing();
-      
       initializeVisibility();
       wireStep1();
       wireStep2();
