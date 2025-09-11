@@ -274,6 +274,7 @@
           value: "",
           eligibilityCheck: "Ignored",
         },
+        { id: "MORTGAGE_TYPE", value: "", eligibilityCheck: "Ignored" },
         { id: "TIME_TO_MOVE", value: "", eligibilityCheck: "Ignored" },
       ],
       reasonUnqualified: "",
@@ -800,8 +801,7 @@
 
     // Handle mortgage interest rate based on selection
     if (isNoMortgage) {
-      setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", "None");
-      // Add MORTGAGE_TYPE when no mortgage is selected
+      // When no mortgage is selected, set MORTGAGE_TYPE to "None" instead of MORTGAGE_INTEREST_RATE
       setHomeProfileValue(payload, "MORTGAGE_TYPE", "None");
     } else if (isUnknownRate) {
       setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", "I don't know");
