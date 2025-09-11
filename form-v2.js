@@ -801,12 +801,17 @@
 
     // Handle mortgage interest rate based on selection
     if (isNoMortgage) {
-      // When no mortgage is selected, set MORTGAGE_TYPE to "None" instead of MORTGAGE_INTEREST_RATE
+      // When no mortgage is selected, only set MORTGAGE_TYPE to "None"
       setHomeProfileValue(payload, "MORTGAGE_TYPE", "None");
+      // Don't send MORTGAGE_INTEREST_RATE at all
     } else if (isUnknownRate) {
+      // When unknown interest rate, only set MORTGAGE_INTEREST_RATE to "I don't know"
       setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", "I don't know");
+      // Don't send MORTGAGE_TYPE at all
     } else {
+      // When known interest rate, only set MORTGAGE_INTEREST_RATE to the value
       setHomeProfileValue(payload, "MORTGAGE_INTEREST_RATE", rate || "");
+      // Don't send MORTGAGE_TYPE at all
     }
 
     setHomeProfileValue(payload, "TIME_TO_MOVE", move || "");
