@@ -28,5 +28,21 @@ echo "Description: $1"
 git tag -a "$NEW_VERSION" -m "$1"
 git push origin "$NEW_VERSION"
 
-echo "✅ Version $NEW_VERSION created and pushed!"
-echo "🔗 View at: https://github.com/bonushomes/website-webflow-code/releases/tag/$NEW_VERSION"
+echo "✅ Git tag $NEW_VERSION created and pushed!"
+
+# If GitHub CLI is available and authenticated, create a Release for this tag
+if command -v gh >/dev/null 2>&1; then
+    echo "🛠  Creating GitHub Release for $NEW_VERSION via gh..."
+    if gh auth status >/dev/null 2>&1; then
+        gh release create "$NEW_VERSION" -t "$NEW_VERSION" -n "$1" >/dev/null 2>&1 && \
+        echo "🎉 GitHub Release created: https://github.com/bonushomes/website-webflow-code/releases/tag/$NEW_VERSION" || \
+        echo "⚠️  Failed to create GitHub Release via gh. You can create it manually in the UI."
+    else
+        echo "⚠️  gh is installed but not authenticated. Run: gh auth login"
+        echo "👉 Tag is available here: https://github.com/bonushomes/website-webflow-code/tree/$NEW_VERSION"
+    fi
+else
+    echo "ℹ️  GitHub Release not auto-created (gh not found)."
+    echo "👉 Tag is available here: https://github.com/bonushomes/website-webflow-code/tree/$NEW_VERSION"
+    echo "👉 To create a Release manually: gh release create $NEW_VERSION -t '$NEW_VERSION' -n '$1'"
+fi
