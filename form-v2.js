@@ -1071,6 +1071,12 @@
           rate.classList.add("disabled");
         }
         applyMutualExclusivity();
+        // Home_Info_QInterest - User selects "I don't know"
+        if (unknown.checked) {
+          trackSegmentEvent("Home_Info_QInterest", {
+            interestRate: "I don't know",
+          });
+        }
       });
     }
     if (noMortgage) {
@@ -1083,6 +1089,12 @@
           rate.classList.add("disabled");
         }
         applyMutualExclusivity();
+        // Home_Info_QInterest - User selects "I don't have a mortgage"
+        if (noMortgage.checked) {
+          trackSegmentEvent("Home_Info_QInterest", {
+            interestRate: "None",
+          });
+        }
       });
     }
 
