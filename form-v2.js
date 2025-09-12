@@ -67,10 +67,26 @@
     );
   }
 
+  // Track fired events to prevent duplicates
+  const firedEvents = new Set();
+
   // Segment tracking function
   function trackSegmentEvent(eventName, properties = {}) {
     try {
       if (typeof analytics !== "undefined") {
+        // Create a unique key for this event
+        const eventKey = `${eventName}_${JSON.stringify(properties)}`;
+
+        // Check if this exact event was already fired
+        if (firedEvents.has(eventKey)) {
+          console.warn(`Duplicate event prevented: ${eventName}`, properties);
+          return;
+        }
+
+        // Mark event as fired
+        firedEvents.add(eventKey);
+
+        console.log(`Firing Segment event: ${eventName}`, properties);
         analytics.track(eventName, {
           ...properties,
           eventId: uuidv4(),
@@ -1485,7 +1501,7 @@
     if (result.ok) {
       // Skip to step 2
       showOnlyStep(SELECTORS.step2);
-      trackSegmentEvent("Home_Info_Init");
+      // Home_Info_Init will be fired by validateAddressAndPrefill()
       return true;
     } else {
       // If validation fails, stay on step 1 but show the address
