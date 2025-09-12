@@ -6,6 +6,11 @@
 */
 
 (function globalSegmentEvents() {
+  // Prevent re-initialization if this script is executed multiple times
+  if (window.__globalSegmentEventsInitialized) {
+    return;
+  }
+  window.__globalSegmentEventsInitialized = true;
   // Simple UUID v4 generator
   function uuidv4() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
@@ -36,9 +41,18 @@
   }
 
   // CTA_GetOffer_Click - User clicks "Get my offer" CTA
+  // Debounce duplicate clicks within a short window
+  let lastCtaTrackedAt = 0;
   function trackCTA_GetOffer_Click(ctaLocation = "header") {
     try {
       if (typeof analytics !== "undefined") {
+        const now = Date.now();
+        if (now - lastCtaTrackedAt < 750) {
+          // Prevent rapid double-click duplicates
+          return;
+        }
+        lastCtaTrackedAt = now;
+
         analytics.track("CTA_GetOffer_Click", {
           ctaLocation: ctaLocation,
           eventId: uuidv4(),
@@ -93,10 +107,18 @@
     ctaSelectors.forEach((selector) => {
       const elements = document.querySelectorAll(selector);
       elements.forEach((element) => {
-        element.addEventListener("click", () => {
-          const location = element.dataset.location || "header";
-          trackCTA_GetOffer_Click(location);
-        });
+        // Use a data-flag to ensure we bind only once per element
+        if (element.dataset.ctaOfferBound === "true") return;
+        element.dataset.ctaOfferBound = "true";
+
+        element.addEventListener(
+          "click",
+          () => {
+            const location = element.dataset.location || "header";
+            trackCTA_GetOffer_Click(location);
+          },
+          { once: false }
+        );
       });
     });
 
