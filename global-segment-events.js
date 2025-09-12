@@ -135,10 +135,13 @@
     addressSubmitBtns.forEach((button) => {
       button.addEventListener("click", (e) => {
         // Find the associated address input
-        const form = button.closest("form");
-        const addressInput = form
-          ? form.querySelector('[data-input="address"]')
-          : null;
+        // 1) Prefer the closest homepage container, 2) fallback to form, 3) fallback to document
+        const container =
+          button.closest('[data-tag="home-page-input"]') ||
+          button.closest("form") ||
+          document;
+
+        const addressInput = container.querySelector('[data-input="address"]');
         const address = addressInput ? addressInput.value : "";
 
         trackPreform_Address_Submit(address);
