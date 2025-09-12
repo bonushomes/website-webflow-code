@@ -100,13 +100,27 @@
       '[data-cta="get-offer"]',
       ".get-offer-btn",
       ".cta-get-offer",
-      'button:contains("Get my offer")',
-      'a:contains("Get my offer")',
+      // Fallback generic selectors; filtered by text content below
+      "button",
+      "a",
     ];
+
+    function isGetOfferElement(element) {
+      const text = (element.innerText || element.textContent || "")
+        .trim()
+        .toLowerCase();
+      return text.includes("get my offer") || text.includes("get offer");
+    }
 
     ctaSelectors.forEach((selector) => {
       const elements = document.querySelectorAll(selector);
       elements.forEach((element) => {
+        if (
+          (selector === "button" || selector === "a") &&
+          !isGetOfferElement(element)
+        ) {
+          return;
+        }
         // Use a data-flag to ensure we bind only once per element
         if (element.dataset.ctaOfferBound === "true") return;
         element.dataset.ctaOfferBound = "true";
