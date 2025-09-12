@@ -356,7 +356,17 @@
 
     showLoading(SELECTORS.step1);
     // Address_Submit - User submits address in form
-    trackSegmentEvent("Address_Submit", { address_present: true });
+    // Suppress if user arrived via Preform submit (one-time)
+    let shouldTrackAddressSubmit = true;
+    try {
+      if (sessionStorage.getItem("preform_submitted") === "true") {
+        shouldTrackAddressSubmit = false;
+        sessionStorage.removeItem("preform_submitted");
+      }
+    } catch (err) {}
+    if (shouldTrackAddressSubmit) {
+      trackSegmentEvent("Address_Submit", { address_present: true });
+    }
     try {
       const res = await fetch(ENDPOINTS.validateProperty, {
         method: "POST",

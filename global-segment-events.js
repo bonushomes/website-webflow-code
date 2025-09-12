@@ -136,10 +136,19 @@
       });
     });
 
-    // Preform_Address_Init - Focus on address input
+    // Preform_Address_Init - Focus on address input (fire only once per page view)
     const addressInputs = document.querySelectorAll('[data-input="address"]');
+    let preformInitFired = false;
     addressInputs.forEach((input) => {
-      input.addEventListener("focus", trackPreform_Address_Init);
+      input.addEventListener(
+        "focus",
+        () => {
+          if (preformInitFired) return;
+          preformInitFired = true;
+          trackPreform_Address_Init();
+        },
+        { once: false }
+      );
     });
 
     // Preform_Address_Submit - Submit on address form
@@ -157,6 +166,11 @@
 
         const addressInput = container.querySelector('[data-input="address"]');
         const address = addressInput ? addressInput.value : "";
+
+        // Flag that we came from preform so the form page can suppress Address_Submit once
+        try {
+          sessionStorage.setItem("preform_submitted", "true");
+        } catch (err) {}
 
         trackPreform_Address_Submit(address);
       });
