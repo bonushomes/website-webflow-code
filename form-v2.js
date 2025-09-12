@@ -55,12 +55,31 @@
     basePayload: "basePayload_v2",
   };
 
-  const dataLayerPush = (eventName, payload = {}) => {
+  // Simple UUID v4 generator
+  function uuidv4() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  }
+
+  // Segment tracking function
+  function trackSegmentEvent(eventName, properties = {}) {
     try {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: eventName, ...payload });
-    } catch (_) {}
-  };
+      if (typeof analytics !== "undefined") {
+        analytics.track(eventName, {
+          ...properties,
+          eventId: uuidv4(),
+        });
+      }
+    } catch (error) {
+      console.error(`Error tracking ${eventName}:`, error);
+    }
+  }
 
   function qs(selector, scope = document) {
     return scope.querySelector(selector);
@@ -320,8 +339,8 @@
     setDisplayAddressText(rawAddress);
 
     showLoading(SELECTORS.step1);
-    // Generic naming: user clicked address validation (step 1 submit)
-    dataLayerPush("Address_Submit", { address_present: true });
+    // Address_Submit - User submits address in form
+    trackSegmentEvent("Address_Submit", { address_present: true });
     try {
       const res = await fetch(ENDPOINTS.validateProperty, {
         method: "POST",
@@ -357,6 +376,8 @@
       if (property) prefillStep2FromPropertyResponse(property);
 
       hideLoadingTo(SELECTORS.step2);
+      // Home_Info_Init - Info step loads after user searches address
+      trackSegmentEvent("Home_Info_Init");
       // Force defaults after step becomes visible to avoid other scripts/auto-fill
       resetStep2Defaults();
       return { ok: true, eligible: !!eligible, property };
@@ -573,103 +594,7 @@
     }
   }
 
-  function sendSegmentLeadEvent(payload) {
-    try {
-      if (typeof analytics === "undefined") return;
-      const utms = getStoredUtms();
-      const addressEl = qs(SELECTORS.addressInput);
-
-      // Get address with priority: URL parameters > form input > saved session data
-      let homeAddress = "";
-
-      // 1. FIRST PRIORITY: URL parameters (NEW address user is actually on page for)
-      const urlParams = new URLSearchParams(window.location.search);
-      const addressParam = urlParams.get("address");
-      if (addressParam) {
-        homeAddress = decodeURIComponent(addressParam);
-        console.log("📍 Using URL address parameter:", homeAddress);
-      }
-
-      // 2. Fallback to form input
-      if (!homeAddress) {
-        homeAddress = addressEl?.value || "";
-        if (homeAddress)
-          console.log("📍 Using form input address:", homeAddress);
-      }
-
-      // 3. Fallback to saved session data
-      if (!homeAddress) {
-        homeAddress = sessionStorage.getItem("saved_address") || "";
-        if (homeAddress) console.log("📍 Using saved_address:", homeAddress);
-      }
-      const data = {
-        first_name: payload.contactInfo.firstName,
-        last_name: payload.contactInfo.lastName,
-        email: payload.contactInfo.email,
-        phone: payload.contactInfo.phoneNumber,
-        source: payload.contactInfo.bonusDiscoverySource,
-        home_address: homeAddress,
-        form_type:
-          payload.userType?.toLowerCase() === "agent" ? "agent" : "homeowner",
-        page_url: window.location.href,
-        ...utms,
-        event_id: "lead-" + Date.now(),
-      };
-      // Only send on production domains, mirroring existing behavior
-      if (
-        window.location.hostname === "bonushomes.com" ||
-        window.location.hostname === "www.bonushomes.com"
-      ) {
-        analytics.track("Lead Submitted", data);
-        if (typeof fbq === "function") {
-          // Get form data for Meta learning
-          const homeValue = qs(SELECTORS.homeValueEst)?.value || "";
-          const interestRate =
-            normalizeInterestRate(qs(SELECTORS.estimatedInterestRate)?.value) ||
-            "";
-          const isUnknownRate = !!qs(SELECTORS.unknownInterest)?.checked;
-          const isNoMortgage = !!qs(SELECTORS.noMortgage)?.checked;
-
-          // Determine interest rate value for Facebook pixel
-          let fbInterestRate = "";
-          if (isNoMortgage) {
-            fbInterestRate = "None";
-          } else if (isUnknownRate) {
-            fbInterestRate = "Unknown";
-          } else {
-            fbInterestRate = interestRate;
-          }
-
-          const fbPayload = {
-            action_source: "website",
-            event_name: "Lead",
-            event_time: new Date().toISOString(),
-            user_data: {
-              email: data.email,
-              phone: data.phone,
-              firstName: data.first_name,
-              lastName: data.last_name,
-              client_user_agent: navigator.userAgent,
-            },
-            app_data_field: {
-              home_address: data.home_address,
-              form_type: data.form_type,
-              source: data.source,
-              home_value: homeValue,
-              interest_rate: fbInterestRate,
-            },
-            locale: navigator.language,
-            deviceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            event_source_url: window.location.href,
-            value: 0,
-            currency: "USD",
-          };
-
-          fbq("track", "Lead", fbPayload, { eventID: data.event_id });
-        }
-      }
-    } catch (_) {}
-  }
+  // Legacy sendSegmentLeadEvent function removed - using granular tracking events instead
 
   function getStoredLocationProfile() {
     try {
@@ -928,8 +853,13 @@
       }
     }
 
-    // Final submit (generic)
-    dataLayerPush("Contact_Info_Submit");
+    // Contact_Info_Submit - Contact info submitted
+    const role = qs(SELECTORS.agentOrHomeowner)?.value || "";
+    const referralSource = qs(SELECTORS.discoverySource)?.value || "";
+    trackSegmentEvent("Contact_Info_Submit", {
+      role: role,
+      referralSource: referralSource,
+    });
     try {
       // Log final payload for debugging
       console.log("🔍 DEBUG: Final payload object:", payloadWithUtm);
@@ -956,17 +886,17 @@
       });
       const json = await res.json();
       sessionStorage.setItem("responseData_v2", JSON.stringify(json));
-      // Fire Segment Lead event (production gated)
-      sendSegmentLeadEvent(payload);
+      // Legacy Segment Lead event removed - using granular tracking events instead
 
       // Show success or fail
       if (eligible) {
         hideLoadingTo(SELECTORS.stepSuccess);
-        // Success confirmation init (generic)
-        dataLayerPush("Thank_You_Complete");
+        // Thank_You_Complete - Thank you page viewed
+        trackSegmentEvent("Thank_You_Complete");
       } else {
         hideLoadingTo(SELECTORS.stepFail);
-        dataLayerPush("Out_Of_Area_Complete");
+        // Out_Of_Area_Complete - Out-of-area page viewed
+        trackSegmentEvent("Out_Of_Area_Complete");
       }
     } catch (err) {
       console.error("Submit lead error", err);
@@ -989,10 +919,10 @@
             return;
           }
           showOnlyStep(SELECTORS.step1);
-          dataLayerPush("form_v2_nav_back_step1");
+          // Navigation back to step 1
         } else if (currentStep.matches(SELECTORS.step3)) {
           showOnlyStep(SELECTORS.step2);
-          dataLayerPush("form_v2_nav_back_step2");
+          // Navigation back to step 2
         }
       });
     });
@@ -1012,8 +942,7 @@
       }
       // Address validation & transition
       await validateAddressAndPrefill();
-      // Step 2 initialization (generic)
-      dataLayerPush("Home_Info_Init");
+      // Step 2 initialization handled in validateAddressAndPrefill
     });
   }
 
@@ -1201,10 +1130,20 @@
       });
       rate.addEventListener("blur", () => {
         formatRateInput(true);
-        // Track interest rate input (only if not unknown and has value)
+        // Home_Info_QInterest - User enters mortgage interest
         const isUnknown = !!unknown?.checked;
-        if (!isUnknown && rate.value && rate.value.trim()) {
-          dataLayerPush("Home_Info_QInterest", { value: rate.value });
+        const isNoMortgage = !!qs(SELECTORS.noMortgage)?.checked;
+
+        if (isNoMortgage) {
+          trackSegmentEvent("Home_Info_QInterest", { interestRate: "None" });
+        } else if (isUnknown) {
+          trackSegmentEvent("Home_Info_QInterest", {
+            interestRate: "I don't know",
+          });
+        } else if (rate.value && rate.value.trim()) {
+          trackSegmentEvent("Home_Info_QInterest", {
+            interestRate: rate.value,
+          });
         }
       });
       rate.addEventListener("paste", () =>
@@ -1217,8 +1156,8 @@
         if (ok) {
           hv.classList.remove("is-invalid");
           hv.classList.add("is-valid");
-          // Track home value selection
-          dataLayerPush("Home_Info_QPrice", { value: hv.value });
+          // Home_Info_QPrice - User selects home value
+          trackSegmentEvent("Home_Info_QPrice", { priceRange: hv.value });
         }
       });
     }
@@ -1228,8 +1167,8 @@
         if (ok) {
           move.classList.remove("is-invalid");
           move.classList.add("is-valid");
-          // Track move timeline selection
-          dataLayerPush("Home_Info_QMove", { value: move.value });
+          // Home_Info_QMove - User selects move timeline
+          trackSegmentEvent("Home_Info_QMove", { moveTimeline: move.value });
         }
       });
     }
@@ -1247,11 +1186,11 @@
       if (!validateStep2Inputs()) {
         return;
       }
-      // Step 2 submit (generic)
-      dataLayerPush("Home_Info_Submit");
+      // Home_Info_Submit - Info step completed
+      trackSegmentEvent("Home_Info_Submit");
       showOnlyStep(SELECTORS.step3);
-      // Step 3 init (generic)
-      dataLayerPush("Contact_Info_Init");
+      // Contact_Info_Init - Contact info step loads
+      trackSegmentEvent("Contact_Info_Init");
     });
   }
 
@@ -1348,7 +1287,13 @@
         }
         const ok = !!brokerage.value.trim();
         brokerage.classList.toggle("is-invalid", !ok);
-        if (ok) brokerage.classList.add("is-valid");
+        if (ok) {
+          brokerage.classList.add("is-valid");
+          // Contact_Info_Brokerage - User enters brokerage info
+          trackSegmentEvent("Contact_Info_Brokerage", {
+            brokerage: brokerage.value,
+          });
+        }
       };
       brokerage.addEventListener("input", fn);
       brokerage.addEventListener("blur", fn);
@@ -1359,6 +1304,10 @@
         if (ok) {
           source.classList.remove("is-invalid");
           source.classList.add("is-valid");
+          // Contact_Info_Referral_Select - User selects referral source
+          trackSegmentEvent("Contact_Info_Referral_Select", {
+            referralSource: source.value,
+          });
         }
       };
       source.addEventListener("change", fn);
@@ -1378,8 +1327,8 @@
     if (!sel) return;
     let firedFor = null; // Keep for possible future needs
     sel.addEventListener("change", (e) => {
-      // Generic contact step init (already fired when entering step 3, but harmless to repeat once)
-      dataLayerPush("Contact_Info_Init");
+      // Contact_Info_Role_Select - User selects agent/homeowner
+      trackSegmentEvent("Contact_Info_Role_Select", { role: e.target.value });
       // Toggle agent-only fields
       toggleAgentConditional(e.target.value);
     });
@@ -1494,8 +1443,8 @@
     showOnlyStep(SELECTORS.step1);
     const addrEl = qs(SELECTORS.addressInput);
     if (addrEl && addrEl.value) setDisplayAddressText(addrEl.value);
-    // Step 1 init (generic)
-    dataLayerPush("Address_Init");
+    // Address_Init - Address step loads
+    trackSegmentEvent("Address_Init");
   }
 
   // NEW: Function to get address from URL parameters
@@ -1536,12 +1485,12 @@
     if (result.ok) {
       // Skip to step 2
       showOnlyStep(SELECTORS.step2);
-      dataLayerPush("Home_Info_Init");
+      trackSegmentEvent("Home_Info_Init");
       return true;
     } else {
       // If validation fails, stay on step 1 but show the address
       showOnlyStep(SELECTORS.step1);
-      dataLayerPush("Address_Init");
+      trackSegmentEvent("Address_Init");
       return false;
     }
   }
