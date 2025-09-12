@@ -987,84 +987,52 @@
       const isUnknown = !!unknown?.checked;
       const isNoMortgage = !!noMortgage?.checked;
 
-      // If interest rate input is filled, allow checkboxes but clear and disable input when checked
+      // Always ensure all controls are enabled; we only clear conflicting values
+      if (rate) {
+        rate.removeAttribute("disabled");
+        rate.classList.remove("disabled");
+      }
+      if (unknown) {
+        unknown.removeAttribute("disabled");
+        unknown.classList.remove("disabled");
+      }
+      if (noMortgage) {
+        noMortgage.removeAttribute("disabled");
+        noMortgage.classList.remove("disabled");
+      }
+
+      // If interest rate input has value, clear both checkboxes
       if (hasInterestRate) {
         if (unknown) {
-          unknown.disabled = false;
-          unknown.removeAttribute("disabled");
-          unknown.classList.remove("disabled");
+          unknown.checked = false;
+          unknown.classList.remove("is-invalid");
         }
         if (noMortgage) {
-          noMortgage.disabled = false;
-          noMortgage.removeAttribute("disabled");
-          noMortgage.classList.remove("disabled");
-        }
-        if (rate) {
-          rate.disabled = false;
-          rate.removeAttribute("disabled");
-          rate.classList.remove("disabled");
+          noMortgage.checked = false;
+          noMortgage.classList.remove("is-invalid");
         }
       }
-      // If unknown interest is checked, disable input and no-mortgage checkbox
+      // If "I don't know" is checked, clear the input and the other checkbox
       else if (isUnknown) {
         if (rate) {
-          rate.disabled = true;
-          rate.setAttribute("disabled", "");
-          rate.classList.add("disabled");
           rate.value = "";
           rate.classList.remove("is-invalid");
         }
         if (noMortgage) {
-          noMortgage.disabled = true;
-          noMortgage.setAttribute("disabled", "");
-          noMortgage.classList.add("disabled");
           noMortgage.checked = false;
         }
-        if (unknown) {
-          unknown.disabled = false;
-          unknown.removeAttribute("disabled");
-          unknown.classList.remove("disabled");
-        }
       }
-      // If no mortgage is checked, disable input and unknown interest checkbox
+      // If "No mortgage" is checked, clear the input and the other checkbox
       else if (isNoMortgage) {
         if (rate) {
-          rate.disabled = true;
-          rate.setAttribute("disabled", "");
-          rate.classList.add("disabled");
           rate.value = "";
           rate.classList.remove("is-invalid");
         }
         if (unknown) {
-          unknown.disabled = true;
-          unknown.setAttribute("disabled", "");
-          unknown.classList.add("disabled");
           unknown.checked = false;
         }
-        if (noMortgage) {
-          noMortgage.disabled = false;
-          noMortgage.removeAttribute("disabled");
-          noMortgage.classList.remove("disabled");
-        }
       }
-      // If none are selected, enable all fields
-      else {
-        if (rate) {
-          rate.disabled = false;
-          rate.removeAttribute("disabled");
-          rate.classList.remove("disabled");
-        }
-        if (unknown) {
-          unknown.disabled = false;
-          unknown.removeAttribute("disabled");
-          unknown.classList.remove("disabled");
-        }
-        if (noMortgage) {
-          noMortgage.disabled = false;
-          noMortgage.removeAttribute("disabled");
-          noMortgage.classList.remove("disabled");
-        }
-      }
+      // Else none selected; nothing to clear
     }
 
     // Add event listeners for mutual exclusivity
@@ -1073,12 +1041,14 @@
     }
     if (unknown) {
       unknown.addEventListener("change", () => {
-        // If checkbox is checked and input has value, clear and disable input
+        // If checkbox is checked and input has value, clear input (do not disable)
         if (unknown.checked && rate && rate.value.trim() !== "") {
           rate.value = "";
-          rate.disabled = true;
-          rate.setAttribute("disabled", "");
-          rate.classList.add("disabled");
+          rate.classList.remove("is-invalid");
+        }
+        // Uncheck the other checkbox if needed
+        if (unknown.checked && noMortgage) {
+          noMortgage.checked = false;
         }
         applyMutualExclusivity();
         // Home_Info_QInterest - User selects "I don't know"
@@ -1091,12 +1061,14 @@
     }
     if (noMortgage) {
       noMortgage.addEventListener("change", () => {
-        // If checkbox is checked and input has value, clear and disable input
+        // If checkbox is checked and input has value, clear input (do not disable)
         if (noMortgage.checked && rate && rate.value.trim() !== "") {
           rate.value = "";
-          rate.disabled = true;
-          rate.setAttribute("disabled", "");
-          rate.classList.add("disabled");
+          rate.classList.remove("is-invalid");
+        }
+        // Uncheck the other checkbox if needed
+        if (noMortgage.checked && unknown) {
+          unknown.checked = false;
         }
         applyMutualExclusivity();
         // Home_Info_QInterest - User selects "I don't have a mortgage"
@@ -1119,7 +1091,7 @@
     // - cap < 10; mark invalid if >= 10
     // - Append trailing % only on blur
     function formatRateInput(showPercentOnOutput = false) {
-      if (!rate || rate.disabled) return;
+      if (!rate) return;
       const isUnknown = !!unknown?.checked;
       const digits = String(rate.value || "")
         .replace(/%/g, "")
