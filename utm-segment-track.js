@@ -7,18 +7,25 @@
   // 1. UTM Retrieval Function
   function getUtms() {
     const utms = {};
-    [
+    const params = new URLSearchParams(window.location.search);
+    const onFormV2 = window.location.pathname.includes("/form-v2");
+
+    const keys = [
       "utm_source",
       "utm_medium",
       "utm_campaign",
       "utm_keyword",
       "utm_content",
       "utm_term",
-    ].forEach((key) => {
-      const value = localStorage.getItem(key);
-      if (value) {
-        utms[key] = value;
-      }
+    ];
+
+    keys.forEach((key) => {
+      // Prefer URL first, then same-session storage; avoid localStorage on form-v2
+      const value =
+        params.get(key) ||
+        sessionStorage.getItem(key) ||
+        (onFormV2 ? null : localStorage.getItem(key));
+      if (value) utms[key] = value;
     });
     return utms;
   }
@@ -47,33 +54,18 @@
       "utm_term",
     ];
 
-    // Check if any UTM parameters are present in current URL
-    const hasUtmParams = utmKeys.some((key) => params.get(key));
+    const currentPath = window.location.pathname;
+    const onFormV2 = currentPath.includes("/form-v2");
 
+    // Same-session pass-through: save URL UTMs into sessionStorage only
+    const hasUtmParams = utmKeys.some((key) => params.get(key));
     if (hasUtmParams) {
-      // Store new UTM parameters
       utmKeys.forEach((key) => {
         const value = params.get(key);
-        if (value) {
-          localStorage.setItem(key, value);
-        }
+        if (value) sessionStorage.setItem(key, value);
       });
     } else {
-      // Only clear UTM parameters if this is NOT a form-related page
-      // (preserve UTM params during form navigation)
-      const currentPath = window.location.pathname;
-      const isFormPage =
-        currentPath.includes("/form") ||
-        currentPath.includes("/submit-") ||
-        currentPath.includes("/form-v2");
-
-      if (!isFormPage) {
-        // Clear old UTM parameters only on non-form pages
-        utmKeys.forEach((key) => {
-          localStorage.removeItem(key);
-        });
-      }
-      // If it's a form page, keep existing UTM parameters
+      // No clearing needed; sessionStorage resets on a new browser session
     }
   }
 

@@ -651,17 +651,32 @@
     // Build payload
     const payload = buildBasePayload();
 
-    // Get UTM parameters (matching old form behavior)
-    const utmParams =
-      typeof window.getUtmParams === "function"
-        ? window.getUtmParams()
-        : {
-            source: "",
-            medium: "",
-            keyword: "",
-            content: "",
-            campaign: "",
-          };
+    // Get UTM parameters from URL, falling back to same-session storage only
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmParams = {
+      source:
+        urlParams.get("utm_source") ||
+        sessionStorage.getItem("utm_source") ||
+        "",
+      medium:
+        urlParams.get("utm_medium") ||
+        sessionStorage.getItem("utm_medium") ||
+        "",
+      keyword:
+        urlParams.get("utm_term") ||
+        urlParams.get("utm_keyword") ||
+        sessionStorage.getItem("utm_term") ||
+        sessionStorage.getItem("utm_keyword") ||
+        "",
+      content:
+        urlParams.get("utm_content") ||
+        sessionStorage.getItem("utm_content") ||
+        "",
+      campaign:
+        urlParams.get("utm_campaign") ||
+        sessionStorage.getItem("utm_campaign") ||
+        "",
+    };
 
     // Address fields - try multiple sources
     const struct = getStructAddressFromSession();
@@ -669,7 +684,6 @@
     console.log("🔍 DEBUG: rawAddress:", rawAddress);
 
     // Try to get address from URL parameters first (highest priority)
-    const urlParams = new URLSearchParams(window.location.search);
     const addressParam = urlParams.get("address");
 
     // Try to get address from display elements as fallback
