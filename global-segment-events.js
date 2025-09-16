@@ -89,8 +89,13 @@
               ? window.getUtmParams()
               : {};
         } catch (_) {}
+        // Filter out empty UTM properties
+        const utmsFiltered = {};
+        Object.entries(utms || {}).forEach(([k, v]) => {
+          if (v && String(v).trim() !== "") utmsFiltered[k] = v;
+        });
         analytics.track("Preform_Address_Init", {
-          ...utms,
+          ...utmsFiltered,
           sessionId,
           eventId: uuidv4(),
         });
@@ -125,9 +130,14 @@
               ? window.getUtmParams()
               : {};
         } catch (_) {}
+        // Filter out empty UTM properties
+        const utmsFiltered = {};
+        Object.entries(utms || {}).forEach(([k, v]) => {
+          if (v && String(v).trim() !== "") utmsFiltered[k] = v;
+        });
 
         analytics.track("Preform_Address_Submit", {
-          ...utms,
+          ...utmsFiltered,
           sessionId,
           address: fullAddress,
           eventId: uuidv4(),
