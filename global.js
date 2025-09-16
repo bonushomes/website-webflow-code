@@ -465,7 +465,7 @@ document.addEventListener("click", function (event) {
     }
 
     const addressValue = encodeURIComponent(addressInput.value.trim());
-    const redirectUrl = `/form-v2?address=${addressValue}`;
+    const redirectUrl = `/form?address=${addressValue}`;
     window.location.href = redirectUrl;
     return;
   }

@@ -144,8 +144,8 @@
       console.log("🔍 Setting up agent form tracking");
       pushGTMEvent("AgentForm_Qualify_Init");
       setupAgentFormSubmitListener();
-    } else if (currentPath === "/form-v2" || currentPath.includes("/form-v2")) {
-      console.log("🔍 Setting up form-v2 tracking");
+    } else if (currentPath === "/form" || currentPath.includes("/form")) {
+      console.log("🔍 Setting up form tracking");
       // Form-v2 handles its own tracking internally, but we can set up any additional tracking here if needed
       // The form-v2.js file has its own dataLayerPush calls for tracking
     } else if (

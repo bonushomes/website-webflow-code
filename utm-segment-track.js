@@ -8,7 +8,7 @@
   function getUtms() {
     const utms = {};
     const params = new URLSearchParams(window.location.search);
-    const onFormV2 = window.location.pathname.includes("/form-v2");
+    const onFormV2 = window.location.pathname.includes("/form");
 
     const keys = [
       "utm_source",
@@ -55,7 +55,7 @@
     ];
 
     const currentPath = window.location.pathname;
-    const onFormV2 = currentPath.includes("/form-v2");
+    const onFormV2 = currentPath.includes("/form");
 
     // Same-session pass-through: save URL UTMs into sessionStorage only
     const hasUtmParams = utmKeys.some((key) => params.get(key));
@@ -223,7 +223,7 @@
     if (currentPath === "/form-agent" || currentPath.includes("/form-agent")) {
       // Agent form now handles tracking internally
       // No additional tracking needed here
-    } else if (currentPath === "/form-v2" || currentPath.includes("/form-v2")) {
+    } else if (currentPath === "/form" || currentPath.includes("/form")) {
       // Form-v2 handles its own tracking internally
       // The form-v2.js file has its own sendSegmentLeadEvent function
     } else if (
