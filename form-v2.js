@@ -1726,7 +1726,29 @@
       wirePhoneFormatting();
       wireBackButtons();
 
-      // Role preselection removed per request
+      // Minimal: preselect role based on referrer path
+      try {
+        const sel = qs(SELECTORS.agentOrHomeowner);
+        if (sel) {
+          let refPath = "";
+          try {
+            if (document.referrer) {
+              refPath = new URL(document.referrer).pathname || "";
+            }
+          } catch (_) {}
+          if (/\/how-bonus-works-homeowners/i.test(refPath)) {
+            if (sel.value !== "Homeowner") {
+              sel.value = "Homeowner";
+              sel.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          } else if (/\/how-bonus-works-agents/i.test(refPath)) {
+            if (sel.value !== "Agent") {
+              sel.value = "Agent";
+              sel.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          }
+        }
+      } catch (_) {}
       // NEW: Check for address in URL and handle it
       if (shouldSkipStep1()) {
         await handleAddressFromUrl();
