@@ -59,6 +59,39 @@
   const SESSION_ID_KEY = "form_v2_session_id";
   const SESSION_CONTEXT_KEY = "form_v2_context";
 
+  // Clear session data on page refresh to start a fresh single-form session
+  try {
+    const navEntries =
+      (performance && performance.getEntriesByType && performance.getEntriesByType("navigation")) ||
+      [];
+    const navType = navEntries[0]?.type || performance?.navigation?.type;
+    const isReload = navType === "reload" || navType === performance?.navigation?.TYPE_RELOAD;
+    if (isReload) {
+      // Remove sticky context and session id
+      sessionStorage.removeItem(SESSION_CONTEXT_KEY);
+      sessionStorage.removeItem(SESSION_ID_KEY);
+      // Remove once-only flags
+      try {
+        Object.keys(sessionStorage).forEach((k) => {
+          if (k && k.indexOf("event_once_") === 0) sessionStorage.removeItem(k);
+        });
+      } catch (_) {}
+      // Remove UTM keys saved to session
+      [
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_keyword",
+        "utm_term",
+        "utm_content",
+      ].forEach((k) => {
+        try {
+          sessionStorage.removeItem(k);
+        } catch (_) {}
+      });
+    }
+  } catch (_) {}
+
   function getSessionId() {
     try {
       let id = sessionStorage.getItem(SESSION_ID_KEY);
