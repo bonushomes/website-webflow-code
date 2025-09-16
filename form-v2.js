@@ -477,6 +477,20 @@
     // Persist display address
     setDisplayAddressText(rawAddress);
 
+    // Persist full address to session context BEFORE any events fire,
+    // so Home_Info_Init and downstream events inherit it even if Address_Submit is suppressed
+    try {
+      const fullAddressEarly = [
+        payload.streetAddress,
+        payload.city,
+        payload.state,
+        payload.zipCode,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      if (fullAddressEarly) updateSessionContext({ address: fullAddressEarly });
+    } catch (_) {}
+
     showLoading(SELECTORS.step1);
     // Address_Submit - User submits address in form
     // Suppress if user arrived via Preform submit (one-time)
