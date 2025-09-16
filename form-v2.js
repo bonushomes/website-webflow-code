@@ -74,7 +74,7 @@
 
   function getUtmParamsForSession() {
     const p = new URLSearchParams(window.location.search);
-    const utm = {
+    const utmAll = {
       source: p.get("utm_source") || sessionStorage.getItem("utm_source") || "",
       medium: p.get("utm_medium") || sessionStorage.getItem("utm_medium") || "",
       keyword:
@@ -88,7 +88,11 @@
       campaign:
         p.get("utm_campaign") || sessionStorage.getItem("utm_campaign") || "",
     };
-    return utm;
+    const utmFiltered = {};
+    Object.entries(utmAll).forEach(([k, v]) => {
+      if (v && String(v).trim() !== "") utmFiltered[k] = v;
+    });
+    return utmFiltered;
   }
 
   function getSessionContext() {
