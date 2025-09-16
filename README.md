@@ -150,3 +150,5 @@ npx eslint agent-form.js
 ```
 
 This setup ensures that syntax errors like the corrupted "ttttttte" text will never make it into your repository again!
+
+CI test: trigger workflow run.
