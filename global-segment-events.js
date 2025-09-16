@@ -80,9 +80,39 @@
   function trackPreform_Address_Submit(address) {
     try {
       if (typeof analytics !== "undefined") {
-        const cityState = parseAddressToCityState(address);
+        const fullAddress = (address || "").trim();
+
+        // Build or reuse sessionId so the same one is used after redirect to /form
+        let sessionId = null;
+        try {
+          sessionId = sessionStorage.getItem("form_v2_session_id");
+          if (!sessionId) {
+            sessionId = uuidv4();
+            sessionStorage.setItem("form_v2_session_id", sessionId);
+          }
+        } catch (_) {}
+
+        // Save address into the same session context used by the form page
+        try {
+          const key = "form_v2_context";
+          const cur = JSON.parse(sessionStorage.getItem(key) || "{}");
+          const next = { ...cur, address: fullAddress };
+          sessionStorage.setItem(key, JSON.stringify(next));
+        } catch (_) {}
+
+        // Include UTMs when available
+        let utms = {};
+        try {
+          utms =
+            typeof window.getUtmParams === "function"
+              ? window.getUtmParams()
+              : {};
+        } catch (_) {}
+
         analytics.track("Preform_Address_Submit", {
-          address: cityState,
+          ...utms,
+          sessionId: sessionId || undefined,
+          address: fullAddress,
           eventId: uuidv4(),
         });
       }
