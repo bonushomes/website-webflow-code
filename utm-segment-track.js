@@ -223,12 +223,9 @@
     if (currentPath === "/form-agent" || currentPath.includes("/form-agent")) {
       // Agent form now handles tracking internally
       // No additional tracking needed here
-    } else if (currentPath === "/form" || currentPath.includes("/form")) {
-      // Form-v2 handles its own tracking internally
-      // The form-v2.js file has its own sendSegmentLeadEvent function
     } else if (
-      currentPath === "/form" ||
-      (currentPath.includes("/form") && !currentPath.includes("/form-agent"))
+      currentPath.includes("/form") &&
+      !currentPath.includes("/form-agent")
     ) {
       // Homeowner form now handles Facebook pixel tracking internally
       // No additional tracking needed here

@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "eslint *.js",
     "lint:fix": "eslint *.js --fix",
-    "check-syntax": "node -c *.js",
+    "check-syntax": "sh -c 'for f in *.js; do node --check \"$f\"; done'",
     "pre-commit": "npm run check-syntax && npm run lint",
     "test": "echo 'No tests specified' && exit 0"
   },
