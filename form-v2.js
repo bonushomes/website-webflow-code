@@ -1725,6 +1725,24 @@
       wireAgentOrHomeownerTracking();
       wirePhoneFormatting();
       wireBackButtons();
+
+      // Preselect role based on page-level data-role (e.g., <body data-role="agent|homeowner">)
+      try {
+        const roleAttrEl = document.querySelector("[data-role]");
+        const roleAttr = roleAttrEl?.getAttribute("data-role") || "";
+        if (roleAttr) {
+          const sel = qs(SELECTORS.agentOrHomeowner);
+          if (sel) {
+            const valueToSet = /agent/i.test(roleAttr) ? "Agent" : "Homeowner";
+            if (sel.value !== valueToSet) {
+              sel.value = valueToSet;
+              // Trigger change to update UI and tracking
+              const evt = new Event("change", { bubbles: true });
+              sel.dispatchEvent(evt);
+            }
+          }
+        }
+      } catch (_) {}
       // NEW: Check for address in URL and handle it
       if (shouldSkipStep1()) {
         await handleAddressFromUrl();
