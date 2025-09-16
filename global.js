@@ -481,21 +481,7 @@ document.addEventListener("click", function (event) {
     }
 
     const addressValue = encodeURIComponent(addressInput.value.trim());
-    // Read nearest role flag if present and pass through to form for preselection
-    let roleParam = "";
-    try {
-      const roleEl =
-        parentContainer.querySelector("[data-role]") ||
-        clickedElement.closest("[data-role]") ||
-        document.querySelector("[data-role]");
-      const roleRaw = roleEl?.getAttribute("data-role") || "";
-      const role = roleRaw.trim();
-      if (/^(agent|homeowner)$/i.test(role)) {
-        const norm = /agent/i.test(role) ? "agent" : "homeowner";
-        roleParam = `&role=${encodeURIComponent(norm)}`;
-      }
-    } catch (_) {}
-    const redirectUrl = `/form?address=${addressValue}${roleParam}`;
+    const redirectUrl = `/form?address=${addressValue}`;
     window.location.href = redirectUrl;
     return;
   }
@@ -520,8 +506,7 @@ document.addEventListener("click", function (event) {
     }
 
     const addressValue = encodeURIComponent(addressInput.value.trim());
-    // Ensure role=homeowner appended for preselect on form
-    window.location.href = `/form?loading=true&address=${addressValue}&role=homeowner`;
+    window.location.href = `/form?loading=true&address=${addressValue}`;
   } else if (submitType === "agent") {
     // Try both old (#address-a) and new ([data-input="address"]) selectors
     const addressInput =

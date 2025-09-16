@@ -1726,25 +1726,7 @@
       wirePhoneFormatting();
       wireBackButtons();
 
-      // Preselect role based on page-level data-role or ?role=agent|homeowner
-      try {
-        const roleAttrEl = document.querySelector("[data-role]");
-        const roleAttr = roleAttrEl?.getAttribute("data-role") || "";
-        const urlRole = new URLSearchParams(window.location.search).get("role") || "";
-        const winningRole = roleAttr || urlRole;
-        if (winningRole) {
-          const sel = qs(SELECTORS.agentOrHomeowner);
-          if (sel) {
-            const norm = /agent/i.test(winningRole) ? "Agent" : /homeowner/i.test(winningRole) ? "Homeowner" : "";
-            if (norm && sel.value !== norm) {
-              sel.value = norm;
-              // Trigger change to update UI and tracking
-              const evt = new Event("change", { bubbles: true });
-              sel.dispatchEvent(evt);
-            }
-          }
-        }
-      } catch (_) {}
+      // Role preselection removed per request
       // NEW: Check for address in URL and handle it
       if (shouldSkipStep1()) {
         await handleAddressFromUrl();
