@@ -1482,12 +1482,13 @@
         brokerage.classList.toggle("is-invalid", !ok);
         if (ok) {
           brokerage.classList.add("is-valid");
-          // Contact_Info_Brokerage - User enters brokerage info
-          trackSegmentEvent("Contact_Info_Brokerage", {
-            brokerage: brokerage.value,
-          });
-          // Persist brokerage to session context
+          // Contact_Info_Brokerage - User enters brokerage info (fire once)
           updateSessionContext({ brokerage: brokerage.value });
+          trackSegmentEventOnce(
+            "Contact_Info_Brokerage",
+            { brokerage: brokerage.value },
+            "Contact_Info_Brokerage"
+          );
         }
       };
       brokerage.addEventListener("input", fn);
