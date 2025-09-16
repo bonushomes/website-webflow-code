@@ -62,10 +62,13 @@
   // Clear session data on page refresh to start a fresh single-form session
   try {
     const navEntries =
-      (performance && performance.getEntriesByType && performance.getEntriesByType("navigation")) ||
+      (performance &&
+        performance.getEntriesByType &&
+        performance.getEntriesByType("navigation")) ||
       [];
     const navType = navEntries[0]?.type || performance?.navigation?.type;
-    const isReload = navType === "reload" || navType === performance?.navigation?.TYPE_RELOAD;
+    const isReload =
+      navType === "reload" || navType === performance?.navigation?.TYPE_RELOAD;
     if (isReload) {
       // Remove sticky context and session id
       sessionStorage.removeItem(SESSION_CONTEXT_KEY);
@@ -1460,6 +1463,10 @@
           brokerage.classList.toggle("is-invalid", !okB);
           if (okB && isAgent) brokerage.classList.add("is-valid");
         }
+        // Persist role to session context when available
+        if (ok) {
+          updateSessionContext({ role: who.value });
+        }
       };
       who.addEventListener("change", fn);
     }
@@ -1479,6 +1486,8 @@
           trackSegmentEvent("Contact_Info_Brokerage", {
             brokerage: brokerage.value,
           });
+          // Persist brokerage to session context
+          updateSessionContext({ brokerage: brokerage.value });
         }
       };
       brokerage.addEventListener("input", fn);
@@ -1491,9 +1500,14 @@
           source.classList.remove("is-invalid");
           source.classList.add("is-valid");
           // Contact_Info_Referral_Select - User selects referral source
-          trackSegmentEvent("Contact_Info_Referral_Select", {
-            referralSource: source.value,
-          });
+          updateSessionContext({ referralSource: source.value });
+          trackSegmentEventOnce(
+            "Contact_Info_Referral_Select",
+            { referralSource: source.value },
+            "Contact_Info_Referral_Select"
+          );
+          // Persist referral source to session context
+          updateSessionContext({ referralSource: source.value });
         }
       };
       source.addEventListener("change", fn);
@@ -1513,8 +1527,13 @@
     if (!sel) return;
     let firedFor = null; // Keep for possible future needs
     sel.addEventListener("change", (e) => {
-      // Contact_Info_Role_Select - User selects agent/homeowner
-      trackSegmentEvent("Contact_Info_Role_Select", { role: e.target.value });
+      // Contact_Info_Role_Select - User selects agent/homeowner (fire once)
+      updateSessionContext({ role: e.target.value });
+      trackSegmentEventOnce(
+        "Contact_Info_Role_Select",
+        { role: e.target.value },
+        "Contact_Info_Role_Select"
+      );
       // Toggle agent-only fields
       toggleAgentConditional(e.target.value);
     });
