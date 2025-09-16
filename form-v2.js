@@ -1735,9 +1735,9 @@
         if (winningRole) {
           const sel = qs(SELECTORS.agentOrHomeowner);
           if (sel) {
-            const valueToSet = /agent/i.test(winningRole) ? "Agent" : "Homeowner";
-            if (sel.value !== valueToSet) {
-              sel.value = valueToSet;
+            const norm = /agent/i.test(winningRole) ? "Agent" : /homeowner/i.test(winningRole) ? "Homeowner" : "";
+            if (norm && sel.value !== norm) {
+              sel.value = norm;
               // Trigger change to update UI and tracking
               const evt = new Event("change", { bubbles: true });
               sel.dispatchEvent(evt);

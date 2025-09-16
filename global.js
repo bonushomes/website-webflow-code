@@ -440,7 +440,11 @@ document.addEventListener("click", function (event) {
 
   // If the attribute was mistakenly placed on the address input itself,
   // ignore clicks so users can type without being blocked.
-  if (ctaElement && (ctaElement.matches('input, textarea') || ctaElement.hasAttribute('data-input'))) {
+  if (
+    ctaElement &&
+    (ctaElement.matches("input, textarea") ||
+      ctaElement.hasAttribute("data-input"))
+  ) {
     return;
   }
 
@@ -477,12 +481,16 @@ document.addEventListener("click", function (event) {
     }
 
     const addressValue = encodeURIComponent(addressInput.value.trim());
-    // Read page-level role if present and pass through to form for preselection
+    // Read nearest role flag if present and pass through to form for preselection
     let roleParam = "";
     try {
-      const roleEl = document.querySelector("[data-role]");
-      const role = roleEl?.getAttribute("data-role") || "";
-      if (role) {
+      const roleEl =
+        parentContainer.querySelector("[data-role]") ||
+        clickedElement.closest("[data-role]") ||
+        document.querySelector("[data-role]");
+      const roleRaw = roleEl?.getAttribute("data-role") || "";
+      const role = roleRaw.trim();
+      if (/^(agent|homeowner)$/i.test(role)) {
         const norm = /agent/i.test(role) ? "agent" : "homeowner";
         roleParam = `&role=${encodeURIComponent(norm)}`;
       }
