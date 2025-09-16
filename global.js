@@ -432,11 +432,17 @@ function validateUserInput(event) {
 document.addEventListener("click", function (event) {
   const clickedElement = event.target;
 
+  // Support both new and old attributes:
+  // - new: [data-cta="address-submit"]
+  // - old: [data-submit="home-address"]
+  const ctaElement = clickedElement.closest('[data-cta="address-submit"]');
   const submitElement = clickedElement.closest("[data-submit]");
 
-  if (!submitElement) return;
+  if (!ctaElement && !submitElement) return;
 
-  const submitType = submitElement.getAttribute("data-submit");
+  const submitType = submitElement
+    ? submitElement.getAttribute("data-submit")
+    : "home-address";
 
   const parentContainer = clickedElement.closest("[data-tag]");
 
@@ -500,7 +506,8 @@ document.addEventListener("click", function (event) {
     }
 
     const addressValue = encodeURIComponent(addressInput.value.trim());
-    window.location.href = `/form?loading=true&address=${addressValue}`;
+    // Ensure role=homeowner appended for preselect on form
+    window.location.href = `/form?loading=true&address=${addressValue}&role=homeowner`;
   } else if (submitType === "agent") {
     // Try both old (#address-a) and new ([data-input="address"]) selectors
     const addressInput =
