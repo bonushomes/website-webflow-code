@@ -83,8 +83,10 @@
         sessionStorage.getItem("utm_term") ||
         sessionStorage.getItem("utm_keyword") ||
         "",
-      content: p.get("utm_content") || sessionStorage.getItem("utm_content") || "",
-      campaign: p.get("utm_campaign") || sessionStorage.getItem("utm_campaign") || "",
+      content:
+        p.get("utm_content") || sessionStorage.getItem("utm_content") || "",
+      campaign:
+        p.get("utm_campaign") || sessionStorage.getItem("utm_campaign") || "",
     };
     return utm;
   }
@@ -1160,9 +1162,13 @@
         // Home_Info_QInterest - User selects "I don't know" (fire once)
         if (unknown.checked) {
           updateSessionContext({ interestRate: "I don't know" });
-          trackSegmentEventOnce("Home_Info_QInterest", {
-            interestRate: "I don't know",
-          }, "Home_Info_QInterest");
+          trackSegmentEventOnce(
+            "Home_Info_QInterest",
+            {
+              interestRate: "I don't know",
+            },
+            "Home_Info_QInterest"
+          );
         }
       });
     }
@@ -1181,9 +1187,13 @@
         // Home_Info_QInterest - User selects "I don't have a mortgage" (fire once)
         if (noMortgage.checked) {
           updateSessionContext({ interestRate: "None" });
-          trackSegmentEventOnce("Home_Info_QInterest", {
-            interestRate: "None",
-          }, "Home_Info_QInterest");
+          trackSegmentEventOnce(
+            "Home_Info_QInterest",
+            {
+              interestRate: "None",
+            },
+            "Home_Info_QInterest"
+          );
         }
       });
     }
@@ -1254,7 +1264,11 @@
 
         if (isNoMortgage) {
           updateSessionContext({ interestRate: "None" });
-          trackSegmentEventOnce("Home_Info_QInterest", { interestRate: "None" }, "Home_Info_QInterest");
+          trackSegmentEventOnce(
+            "Home_Info_QInterest",
+            { interestRate: "None" },
+            "Home_Info_QInterest"
+          );
         } else if (isUnknown) {
           updateSessionContext({ interestRate: "I don't know" });
           trackSegmentEventOnce(
@@ -1283,7 +1297,11 @@
           hv.classList.add("is-valid");
           // Home_Info_QPrice - User selects home value
           updateSessionContext({ priceRange: hv.value });
-          trackSegmentEventOnce("Home_Info_QPrice", { priceRange: hv.value }, "Home_Info_QPrice");
+          trackSegmentEventOnce(
+            "Home_Info_QPrice",
+            { priceRange: hv.value },
+            "Home_Info_QPrice"
+          );
         }
       });
     }
@@ -1295,7 +1313,11 @@
           move.classList.add("is-valid");
           // Home_Info_QMove - User selects move timeline
           updateSessionContext({ moveTimeline: move.value });
-          trackSegmentEventOnce("Home_Info_QMove", { moveTimeline: move.value }, "Home_Info_QMove");
+          trackSegmentEventOnce(
+            "Home_Info_QMove",
+            { moveTimeline: move.value },
+            "Home_Info_QMove"
+          );
         }
       });
     }
