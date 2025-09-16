@@ -1726,14 +1726,16 @@
       wirePhoneFormatting();
       wireBackButtons();
 
-      // Preselect role based on page-level data-role (e.g., <body data-role="agent|homeowner">)
+      // Preselect role based on page-level data-role or ?role=agent|homeowner
       try {
         const roleAttrEl = document.querySelector("[data-role]");
         const roleAttr = roleAttrEl?.getAttribute("data-role") || "";
-        if (roleAttr) {
+        const urlRole = new URLSearchParams(window.location.search).get("role") || "";
+        const winningRole = roleAttr || urlRole;
+        if (winningRole) {
           const sel = qs(SELECTORS.agentOrHomeowner);
           if (sel) {
-            const valueToSet = /agent/i.test(roleAttr) ? "Agent" : "Homeowner";
+            const valueToSet = /agent/i.test(winningRole) ? "Agent" : "Homeowner";
             if (sel.value !== valueToSet) {
               sel.value = valueToSet;
               // Trigger change to update UI and tracking

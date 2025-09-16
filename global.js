@@ -465,7 +465,17 @@ document.addEventListener("click", function (event) {
     }
 
     const addressValue = encodeURIComponent(addressInput.value.trim());
-    const redirectUrl = `/form?address=${addressValue}`;
+    // Read page-level role if present and pass through to form for preselection
+    let roleParam = "";
+    try {
+      const roleEl = document.querySelector("[data-role]");
+      const role = roleEl?.getAttribute("data-role") || "";
+      if (role) {
+        const norm = /agent/i.test(role) ? "agent" : "homeowner";
+        roleParam = `&role=${encodeURIComponent(norm)}`;
+      }
+    } catch (_) {}
+    const redirectUrl = `/form?address=${addressValue}${roleParam}`;
     window.location.href = redirectUrl;
     return;
   }
