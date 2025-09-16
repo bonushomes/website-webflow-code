@@ -55,6 +55,81 @@
     basePayload: "basePayload_v2",
   };
 
+  // Session + context for Segment events
+  const SESSION_ID_KEY = "form_v2_session_id";
+  const SESSION_CONTEXT_KEY = "form_v2_context";
+
+  function getSessionId() {
+    try {
+      let id = sessionStorage.getItem(SESSION_ID_KEY);
+      if (!id) {
+        id = uuidv4();
+        sessionStorage.setItem(SESSION_ID_KEY, id);
+      }
+      return id;
+    } catch (_) {
+      return uuidv4();
+    }
+  }
+
+  function getUtmParamsForSession() {
+    const p = new URLSearchParams(window.location.search);
+    const utm = {
+      source: p.get("utm_source") || sessionStorage.getItem("utm_source") || "",
+      medium: p.get("utm_medium") || sessionStorage.getItem("utm_medium") || "",
+      keyword:
+        p.get("utm_term") ||
+        p.get("utm_keyword") ||
+        sessionStorage.getItem("utm_term") ||
+        sessionStorage.getItem("utm_keyword") ||
+        "",
+      content: p.get("utm_content") || sessionStorage.getItem("utm_content") || "",
+      campaign: p.get("utm_campaign") || sessionStorage.getItem("utm_campaign") || "",
+    };
+    return utm;
+  }
+
+  function getSessionContext() {
+    try {
+      const raw = sessionStorage.getItem(SESSION_CONTEXT_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function updateSessionContext(partial) {
+    try {
+      const cur = getSessionContext();
+      const next = { ...cur, ...partial };
+      sessionStorage.setItem(SESSION_CONTEXT_KEY, JSON.stringify(next));
+      return next;
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function hasEventOnce(onceKey) {
+    try {
+      return sessionStorage.getItem(`event_once_${onceKey}`) === "true";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function markEventOnce(onceKey) {
+    try {
+      sessionStorage.setItem(`event_once_${onceKey}`, "true");
+    } catch (_) {}
+  }
+
+  function trackSegmentEventOnce(eventName, properties = {}, onceKey) {
+    const key = onceKey || eventName;
+    if (hasEventOnce(key)) return;
+    trackSegmentEvent(eventName, properties);
+    markEventOnce(key);
+  }
+
   // Simple UUID v4 generator
   function uuidv4() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
@@ -74,21 +149,27 @@
   function trackSegmentEvent(eventName, properties = {}) {
     try {
       if (typeof analytics !== "undefined") {
+        // Augment with session + UTMs + sticky context
+        const sessionId = getSessionId();
+        const utms = getUtmParamsForSession();
+        const ctx = getSessionContext();
+        const finalProps = { ...utms, sessionId, ...ctx, ...properties };
+
         // Create a unique key for this event
-        const eventKey = `${eventName}_${JSON.stringify(properties)}`;
+        const eventKey = `${eventName}_${JSON.stringify(finalProps)}`;
 
         // Check if this exact event was already fired
         if (firedEvents.has(eventKey)) {
-          console.warn(`Duplicate event prevented: ${eventName}`, properties);
+          console.warn(`Duplicate event prevented: ${eventName}`, finalProps);
           return;
         }
 
         // Mark event as fired
         firedEvents.add(eventKey);
 
-        console.log(`Firing Segment event: ${eventName}`, properties);
+        console.log(`Firing Segment event: ${eventName}`, finalProps);
         analytics.track(eventName, {
-          ...properties,
+          ...finalProps,
           eventId: uuidv4(),
         });
       }
@@ -365,7 +446,18 @@
       }
     } catch (err) {}
     if (shouldTrackAddressSubmit) {
-      trackSegmentEvent("Address_Submit", { address_present: true });
+      // Build full address string where possible
+      const fullAddress = [
+        payload.streetAddress,
+        payload.city,
+        payload.state,
+        payload.zipCode,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      // Persist to session context for later events
+      updateSessionContext({ address: fullAddress });
+      trackSegmentEvent("Address_Submit", { address: fullAddress });
     }
     try {
       const res = await fetch(ENDPOINTS.validateProperty, {
@@ -403,7 +495,7 @@
 
       hideLoadingTo(SELECTORS.step2);
       // Home_Info_Init - Info step loads after user searches address
-      trackSegmentEvent("Home_Info_Init");
+      trackSegmentEventOnce("Home_Info_Init");
       // Force defaults after step becomes visible to avoid other scripts/auto-fill
       resetStep2Defaults();
       return { ok: true, eligible: !!eligible, property };
@@ -1065,11 +1157,12 @@
           noMortgage.checked = false;
         }
         applyMutualExclusivity();
-        // Home_Info_QInterest - User selects "I don't know"
+        // Home_Info_QInterest - User selects "I don't know" (fire once)
         if (unknown.checked) {
-          trackSegmentEvent("Home_Info_QInterest", {
+          updateSessionContext({ interestRate: "I don't know" });
+          trackSegmentEventOnce("Home_Info_QInterest", {
             interestRate: "I don't know",
-          });
+          }, "Home_Info_QInterest");
         }
       });
     }
@@ -1085,11 +1178,12 @@
           unknown.checked = false;
         }
         applyMutualExclusivity();
-        // Home_Info_QInterest - User selects "I don't have a mortgage"
+        // Home_Info_QInterest - User selects "I don't have a mortgage" (fire once)
         if (noMortgage.checked) {
-          trackSegmentEvent("Home_Info_QInterest", {
+          updateSessionContext({ interestRate: "None" });
+          trackSegmentEventOnce("Home_Info_QInterest", {
             interestRate: "None",
-          });
+          }, "Home_Info_QInterest");
         }
       });
     }
@@ -1159,15 +1253,22 @@
         const isNoMortgage = !!qs(SELECTORS.noMortgage)?.checked;
 
         if (isNoMortgage) {
-          trackSegmentEvent("Home_Info_QInterest", { interestRate: "None" });
+          updateSessionContext({ interestRate: "None" });
+          trackSegmentEventOnce("Home_Info_QInterest", { interestRate: "None" }, "Home_Info_QInterest");
         } else if (isUnknown) {
-          trackSegmentEvent("Home_Info_QInterest", {
-            interestRate: "I don't know",
-          });
+          updateSessionContext({ interestRate: "I don't know" });
+          trackSegmentEventOnce(
+            "Home_Info_QInterest",
+            { interestRate: "I don't know" },
+            "Home_Info_QInterest"
+          );
         } else if (rate.value && rate.value.trim()) {
-          trackSegmentEvent("Home_Info_QInterest", {
-            interestRate: rate.value,
-          });
+          updateSessionContext({ interestRate: rate.value });
+          trackSegmentEventOnce(
+            "Home_Info_QInterest",
+            { interestRate: rate.value },
+            "Home_Info_QInterest"
+          );
         }
       });
       rate.addEventListener("paste", () =>
@@ -1181,7 +1282,8 @@
           hv.classList.remove("is-invalid");
           hv.classList.add("is-valid");
           // Home_Info_QPrice - User selects home value
-          trackSegmentEvent("Home_Info_QPrice", { priceRange: hv.value });
+          updateSessionContext({ priceRange: hv.value });
+          trackSegmentEventOnce("Home_Info_QPrice", { priceRange: hv.value }, "Home_Info_QPrice");
         }
       });
     }
@@ -1192,7 +1294,8 @@
           move.classList.remove("is-invalid");
           move.classList.add("is-valid");
           // Home_Info_QMove - User selects move timeline
-          trackSegmentEvent("Home_Info_QMove", { moveTimeline: move.value });
+          updateSessionContext({ moveTimeline: move.value });
+          trackSegmentEventOnce("Home_Info_QMove", { moveTimeline: move.value }, "Home_Info_QMove");
         }
       });
     }
@@ -1210,11 +1313,11 @@
       if (!validateStep2Inputs()) {
         return;
       }
-      // Home_Info_Submit - Info step completed
-      trackSegmentEvent("Home_Info_Submit");
+      // Home_Info_Submit - Info step completed (fire once)
+      trackSegmentEventOnce("Home_Info_Submit");
       showOnlyStep(SELECTORS.step3);
       // Contact_Info_Init - Contact info step loads
-      trackSegmentEvent("Contact_Info_Init");
+      trackSegmentEventOnce("Contact_Info_Init");
     });
   }
 
