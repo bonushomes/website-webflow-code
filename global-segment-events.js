@@ -23,6 +23,20 @@
     );
   }
 
+  // Ensure we use the same sessionId across preform and form pages
+  function getOrCreateSessionId() {
+    try {
+      let id = sessionStorage.getItem("form_v2_session_id");
+      if (!id) {
+        id = uuidv4();
+        sessionStorage.setItem("form_v2_session_id", id);
+      }
+      return id;
+    } catch (_) {
+      return uuidv4();
+    }
+  }
+
   // Parse address to city, state format (e.g., "Corona, CA")
   function parseAddressToCityState(fullAddress) {
     if (!fullAddress || typeof fullAddress !== "string") return "";
@@ -67,7 +81,17 @@
   function trackPreform_Address_Init() {
     try {
       if (typeof analytics !== "undefined") {
+        const sessionId = getOrCreateSessionId();
+        let utms = {};
+        try {
+          utms =
+            typeof window.getUtmParams === "function"
+              ? window.getUtmParams()
+              : {};
+        } catch (_) {}
         analytics.track("Preform_Address_Init", {
+          ...utms,
+          sessionId,
           eventId: uuidv4(),
         });
       }
@@ -82,15 +106,8 @@
       if (typeof analytics !== "undefined") {
         const fullAddress = (address || "").trim();
 
-        // Build or reuse sessionId so the same one is used after redirect to /form
-        let sessionId = null;
-        try {
-          sessionId = sessionStorage.getItem("form_v2_session_id");
-          if (!sessionId) {
-            sessionId = uuidv4();
-            sessionStorage.setItem("form_v2_session_id", sessionId);
-          }
-        } catch (_) {}
+        // Reuse sessionId for continuity into the form
+        const sessionId = getOrCreateSessionId();
 
         // Save address into the same session context used by the form page
         try {
@@ -111,7 +128,7 @@
 
         analytics.track("Preform_Address_Submit", {
           ...utms,
-          sessionId: sessionId || undefined,
+          sessionId,
           address: fullAddress,
           eventId: uuidv4(),
         });
