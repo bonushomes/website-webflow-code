@@ -433,10 +433,16 @@ document.addEventListener("click", function (event) {
   const clickedElement = event.target;
 
   // Support both new and old attributes:
-  // - new: [data-cta="address-submit"]
+  // - new: [data-cta="address-submit"] (should be on a button/link, NOT the input)
   // - old: [data-submit="home-address"]
   const ctaElement = clickedElement.closest('[data-cta="address-submit"]');
   const submitElement = clickedElement.closest("[data-submit]");
+
+  // If the attribute was mistakenly placed on the address input itself,
+  // ignore clicks so users can type without being blocked.
+  if (ctaElement && (ctaElement.matches('input, textarea') || ctaElement.hasAttribute('data-input'))) {
+    return;
+  }
 
   if (!ctaElement && !submitElement) return;
 
