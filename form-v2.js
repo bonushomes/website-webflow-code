@@ -95,6 +95,44 @@
     }
   } catch (_) {}
 
+  // Additional robust refresh detection: use beforeunload marker
+  try {
+    // On unload, mark timestamp and path
+    window.addEventListener("beforeunload", () => {
+      try {
+        sessionStorage.setItem("form_v2_last_unload", String(Date.now()));
+        sessionStorage.setItem("form_v2_last_path", window.location.pathname);
+      } catch (_) {}
+    });
+
+    // On load, if we recently unloaded the same path, treat as refresh and clear
+    const lastUnload = Number(sessionStorage.getItem("form_v2_last_unload") || "0");
+    const lastPath = sessionStorage.getItem("form_v2_last_path") || "";
+    const samePath = lastPath === window.location.pathname;
+    const recent = Date.now() - lastUnload < 5000; // 5s window
+    if (samePath && recent) {
+      sessionStorage.removeItem(SESSION_CONTEXT_KEY);
+      sessionStorage.removeItem(SESSION_ID_KEY);
+      try {
+        Object.keys(sessionStorage).forEach((k) => {
+          if (k && k.indexOf("event_once_") === 0) sessionStorage.removeItem(k);
+        });
+      } catch (_) {}
+      [
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_keyword",
+        "utm_term",
+        "utm_content",
+      ].forEach((k) => {
+        try {
+          sessionStorage.removeItem(k);
+        } catch (_) {}
+      });
+    }
+  } catch (_) {}
+
   function getSessionId() {
     try {
       let id = sessionStorage.getItem(SESSION_ID_KEY);

@@ -229,7 +229,12 @@
           sessionStorage.setItem("preform_submitted", "true");
         } catch (err) {}
 
-        trackPreform_Address_Submit(address);
+        // Fire preform event on any non-form page
+        const path = window.location.pathname || "";
+        const isForm = /\/form(\b|\/)/i.test(path);
+        if (!isForm) {
+          trackPreform_Address_Submit(address);
+        }
       });
     });
   }
