@@ -106,7 +106,9 @@
     });
 
     // On load, if we recently unloaded the same path, treat as refresh and clear
-    const lastUnload = Number(sessionStorage.getItem("form_v2_last_unload") || "0");
+    const lastUnload = Number(
+      sessionStorage.getItem("form_v2_last_unload") || "0"
+    );
     const lastPath = sessionStorage.getItem("form_v2_last_path") || "";
     const samePath = lastPath === window.location.pathname;
     const recent = Date.now() - lastUnload < 5000; // 5s window
@@ -189,6 +191,34 @@
     }
   }
 
+  // Cookie helpers for tracking identifiers
+  function getCookieByName(name) {
+    try {
+      const cookieString = document.cookie || "";
+      if (!cookieString) return "";
+      const parts = cookieString.split("; ");
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        const eqIndex = part.indexOf("=");
+        if (eqIndex === -1) continue;
+        const key = part.substring(0, eqIndex);
+        if (key === name) {
+          return decodeURIComponent(part.substring(eqIndex + 1));
+        }
+      }
+      return "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function getFbCookies() {
+    return {
+      fbp: getCookieByName("_fbp") || "",
+      fbc: getCookieByName("_fbc") || "",
+    };
+  }
+
   function hasEventOnce(onceKey) {
     try {
       return sessionStorage.getItem(`event_once_${onceKey}`) === "true";
@@ -247,11 +277,11 @@
         // Mark event as fired
         firedEvents.add(eventKey);
 
-        console.log(`Firing Segment event: ${eventName}`, finalProps);
-        analytics.track(eventName, {
-          ...finalProps,
-          eventId: uuidv4(),
-        });
+        const eventIdOverride = finalProps.eventId || null;
+        const resolvedEventId = eventIdOverride || uuidv4();
+        const payloadToSend = { ...finalProps, eventId: resolvedEventId };
+        console.log(`Firing Segment event: ${eventName}`, payloadToSend);
+        analytics.track(eventName, payloadToSend);
       }
     } catch (error) {
       console.error(`Error tracking ${eventName}:`, error);
@@ -1058,10 +1088,17 @@
 
     sessionStorage.setItem(STORAGE_KEYS.basePayload, JSON.stringify(payload));
 
-    // Add UTM parameters to payload (matching old form behavior) - AFTER all payload population
+    // Add UTM parameters and event tracking to payload - AFTER all payload population
+    const { fbp, fbc } = getFbCookies();
+    const finalEventId = uuidv4();
     const payloadWithUtm = {
       ...payload,
       utmParams,
+      eventTracking: {
+        eventId: finalEventId,
+        fbc: fbc || "",
+        fbp: fbp || "",
+      },
     };
 
     showLoading(SELECTORS.step3);
@@ -1118,11 +1155,11 @@
       if (eligible) {
         hideLoadingTo(SELECTORS.stepSuccess);
         // Thank_You_Complete - Thank you page viewed
-        trackSegmentEvent("Thank_You_Complete");
+        trackSegmentEvent("Thank_You_Complete", { eventId: finalEventId });
       } else {
         hideLoadingTo(SELECTORS.stepFail);
         // Out_Of_Area_Complete - Out-of-area page viewed
-        trackSegmentEvent("Out_Of_Area_Complete");
+        trackSegmentEvent("Out_Of_Area_Complete", { eventId: finalEventId });
       }
     } catch (err) {
       console.error("Submit lead error", err);
