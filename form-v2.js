@@ -1091,14 +1091,13 @@
     // Add UTM parameters and event tracking to payload - AFTER all payload population
     const { fbp, fbc } = getFbCookies();
     const finalEventId = uuidv4();
+    const eventTracking = { eventId: finalEventId };
+    if (fbc && String(fbc).trim() !== "") eventTracking.fbc = fbc;
+    if (fbp && String(fbp).trim() !== "") eventTracking.fbp = fbp;
     const payloadWithUtm = {
       ...payload,
       utmParams,
-      eventTracking: {
-        eventId: finalEventId,
-        fbc: fbc || "",
-        fbp: fbp || "",
-      },
+      eventTracking,
     };
 
     showLoading(SELECTORS.step3);
