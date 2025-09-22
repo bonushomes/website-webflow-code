@@ -1471,7 +1471,7 @@
           // Check if $600,000+ is selected and show popup
           if (hv.value === "$600,000+") {
             const userConfirmed = confirm(
-              "We are not currently working with homes in this value range. If you'd like to be contacted in the future if we start doing homes in this range, please continue filling out the form."
+              "Currently, we're unable to bonus homes in this price range. If you'd like to be contacted when we expand our offering, please continue filling out the form."
             );
 
             // If user clicks "Cancel", reset to default selection
