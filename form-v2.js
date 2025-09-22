@@ -1423,6 +1423,22 @@
         if (ok) {
           hv.classList.remove("is-invalid");
           hv.classList.add("is-valid");
+
+          // Check if $600,000+ is selected and show popup
+          if (hv.value === "$600,000+") {
+            const userConfirmed = confirm(
+              "We are not currently working with homes in this value range. If you'd like to be contacted in the future if we start doing homes in this range, please continue filling out the form."
+            );
+
+            // If user clicks "Cancel", reset to default selection
+            if (!userConfirmed) {
+              hv.selectedIndex = 0;
+              hv.classList.remove("is-valid");
+              hv.classList.remove("is-invalid");
+              return;
+            }
+          }
+
           // Home_Info_QPrice - User selects home value
           updateSessionContext({ priceRange: hv.value });
           trackSegmentEventOnce(

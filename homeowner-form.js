@@ -718,8 +718,8 @@ function parseAddress(address) {
 //       console.log("Raw estimate:", estimate);
 
 //       function formatRange(min, max) {
-//         if (max === 650000) {
-//           return "$650,000+";
+//         if (max === 600000) {
+//           return "$600,000+";
 //         }
 //         // Using regular hyphen (-) to match select options
 //         return `$${min / 1000},000 - $${max / 1000},000`;
@@ -734,7 +734,6 @@ function parseAddress(address) {
 //         [450000, 500000],
 //         [500000, 550000],
 //         [550000, 600000],
-//         [600000, 650000],
 //       ];
 
 //       let mappedValue = "";
@@ -924,8 +923,8 @@ function prefillForm(data) {
       console.log("Raw estimate:", estimate);
 
       function formatRange(min, max) {
-        if (max === 650000) {
-          return "$650,000+";
+        if (max === 600000) {
+          return "$600,000+";
         }
         // Using regular hyphen (-) to match select options
         return `$${min / 1000},000 - $${max / 1000},000`;
@@ -940,7 +939,6 @@ function prefillForm(data) {
         [450000, 500000],
         [500000, 550000],
         [550000, 600000],
-        [600000, 650000],
       ];
 
       let mappedValue = "";
@@ -956,8 +954,8 @@ function prefillForm(data) {
 
       // Handle the edge cases
       if (!mappedValue) {
-        if (estimate >= 650000) {
-          mappedValue = "$650,000+";
+        if (estimate >= 600000) {
+          mappedValue = "$600,000+";
         } else if (estimate < 200000) {
           mappedValue = "$200,000 - $250,000";
         }
