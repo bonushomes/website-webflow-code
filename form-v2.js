@@ -1181,6 +1181,28 @@
       sessionStorage.setItem("responseData_v2", JSON.stringify(json));
       // Legacy Segment Lead event removed - using granular tracking events instead
 
+      // Fire Meta Pixel Lead with same eventId used in API payload
+      try {
+        const isProdHost =
+          window.location.hostname === "bonushomes.com" ||
+          window.location.hostname === "www.bonushomes.com";
+        if (isProdHost && typeof fbq === "function") {
+          // Build minimal non-sensitive custom_data
+          const customData = {
+            content_name: "Web Form Lead",
+            content_category:
+              String(payload.userType || "").trim() || "Homeowner",
+          };
+
+          try {
+            console.log("FB custom_data (v2):", customData);
+          } catch (_) {}
+          fbq("track", "Lead", customData, { eventID: finalEventId });
+        }
+      } catch (err) {
+        console.warn("Meta Pixel Lead not sent:", err);
+      }
+
       // Show success or fail
       if (eligible) {
         // Hide loading and show role-based success step
