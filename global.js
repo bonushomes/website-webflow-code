@@ -1,5 +1,28 @@
 console.log("global js loaded");
 
+// UTM Capture and Storage (runs on every page load)
+function saveUtmsFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const utmKeys = [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_keyword",
+    "utm_content",
+    "utm_term",
+  ];
+
+  utmKeys.forEach((key) => {
+    const value = params.get(key);
+    if (value) {
+      sessionStorage.setItem(key, value);
+    }
+  });
+}
+
+// Initialize UTM capture immediately
+saveUtmsFromUrl();
+
 // function validateUserInput(event) {
 //   const inputElement = event.target;
 //   const value = inputElement.value.trim();
