@@ -24,6 +24,7 @@ function saveUtmsFromUrl() {
 saveUtmsFromUrl();
 
 // Clear UTMs on page refresh to prevent stale attribution
+// BUT only if there are no UTMs in the current URL
 function clearUtmsOnRefresh() {
   try {
     const navEntries =
@@ -36,18 +37,32 @@ function clearUtmsOnRefresh() {
       navType === "reload" || navType === performance?.navigation?.TYPE_RELOAD;
 
     if (isReload) {
-      const utmKeys = [
+      // Check if current URL has UTMs - if so, don't clear (let saveUtmsFromUrl handle it)
+      const params = new URLSearchParams(window.location.search);
+      const hasUtmParams = [
         "utm_source",
         "utm_medium",
         "utm_campaign",
         "utm_keyword",
         "utm_content",
         "utm_term",
-      ];
+      ].some((key) => params.get(key));
 
-      utmKeys.forEach((key) => {
-        sessionStorage.removeItem(key);
-      });
+      // Only clear if there are no UTMs in the current URL
+      if (!hasUtmParams) {
+        const utmKeys = [
+          "utm_source",
+          "utm_medium",
+          "utm_campaign",
+          "utm_keyword",
+          "utm_content",
+          "utm_term",
+        ];
+
+        utmKeys.forEach((key) => {
+          sessionStorage.removeItem(key);
+        });
+      }
     }
   } catch (_) {}
 }
