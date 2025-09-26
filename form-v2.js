@@ -81,19 +81,7 @@
           if (k && k.indexOf("event_once_") === 0) sessionStorage.removeItem(k);
         });
       } catch (_) {}
-      // Remove UTM keys saved to session
-      [
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_keyword",
-        "utm_term",
-        "utm_content",
-      ].forEach((k) => {
-        try {
-          sessionStorage.removeItem(k);
-        } catch (_) {}
-      });
+      // UTM clearing now handled globally in global.js
     }
   } catch (_) {}
 
@@ -122,18 +110,7 @@
           if (k && k.indexOf("event_once_") === 0) sessionStorage.removeItem(k);
         });
       } catch (_) {}
-      [
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_keyword",
-        "utm_term",
-        "utm_content",
-      ].forEach((k) => {
-        try {
-          sessionStorage.removeItem(k);
-        } catch (_) {}
-      });
+      // UTM clearing now handled globally in global.js
     }
   } catch (_) {}
 

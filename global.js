@@ -23,6 +23,38 @@ function saveUtmsFromUrl() {
 // Initialize UTM capture immediately
 saveUtmsFromUrl();
 
+// Clear UTMs on page refresh to prevent stale attribution
+function clearUtmsOnRefresh() {
+  try {
+    const navEntries =
+      (performance &&
+        performance.getEntriesByType &&
+        performance.getEntriesByType("navigation")) ||
+      [];
+    const navType = navEntries[0]?.type || performance?.navigation?.type;
+    const isReload =
+      navType === "reload" || navType === performance?.navigation?.TYPE_RELOAD;
+
+    if (isReload) {
+      const utmKeys = [
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_keyword",
+        "utm_content",
+        "utm_term",
+      ];
+
+      utmKeys.forEach((key) => {
+        sessionStorage.removeItem(key);
+      });
+    }
+  } catch (_) {}
+}
+
+// Clear UTMs on refresh
+clearUtmsOnRefresh();
+
 // function validateUserInput(event) {
 //   const inputElement = event.target;
 //   const value = inputElement.value.trim();
