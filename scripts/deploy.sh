@@ -25,19 +25,41 @@ NEXT_VERSION="$(
   node <<'NODE'
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const pkgPath = path.join(process.cwd(), 'package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
+const tags = execSync('git tag --list', { stdio: ['ignore', 'pipe', 'ignore'] })
+  .toString()
+  .split('\n')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 const parts = pkg.version.split('.').map((n) => Number.parseInt(n, 10) || 0);
 while (parts.length < 3) parts.push(0);
-parts[2] += 1;
 
-const nextVersion = parts.join('.');
-pkg.version = nextVersion;
+function hasTag(version) {
+  const tag = `v${version}`;
+  return tags.includes(tag);
+}
 
+function bumpPatch(nums) {
+  const next = nums.slice();
+  next[2] += 1;
+  return next;
+}
+
+let candidateParts = bumpPatch(parts);
+let candidateVersion = candidateParts.join('.');
+while (hasTag(candidateVersion)) {
+  candidateParts = bumpPatch(candidateParts);
+  candidateVersion = candidateParts.join('.');
+}
+
+pkg.version = candidateVersion;
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-process.stdout.write(nextVersion);
+process.stdout.write(candidateVersion);
 NODE
 )"
 
