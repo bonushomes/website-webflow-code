@@ -1,13 +1,14 @@
 {
   "name": "webflow-forms",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Webflow form tracking and validation scripts",
   "scripts": {
     "lint": "eslint *.js",
     "lint:fix": "eslint *.js --fix",
     "check-syntax": "sh -c 'for f in *.js; do node --check \"$f\"; done'",
     "pre-commit": "npm run check-syntax && npm run lint",
-    "test": "echo 'No tests specified' && exit 0"
+    "test": "echo 'No tests specified' && exit 0",
+    "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {
     "eslint": "^8.0.0"

@@ -393,6 +393,19 @@
     return n.toString();
   }
 
+  function normalizeBoolean(value) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "true") return true;
+      if (normalized === "false") return false;
+      if (normalized === "1") return true;
+      if (normalized === "0") return false;
+    }
+    if (typeof value === "number") return value !== 0;
+    return false;
+  }
+
   function transformStateToAbbrev(stateName) {
     const map = {
       Alabama: "AL",
@@ -1040,24 +1053,22 @@
     console.log("🔍 DEBUG: storedLP:", storedLP);
     let eligible = false;
     if (storedLP) {
-      // Use the actual API response values (don't convert to boolean)
-      payload.locationProfile = {
-        isInPreferredZipCode: storedLP.isInPreferredZipCode,
-        isInOperatedMSA: storedLP.isInOperatedMSA,
-        isInOperatedState: storedLP.isInOperatedState,
-        eligibilityCheck: storedLP.eligibilityCheck || "Passed",
-      };
+      const zipEligible = normalizeBoolean(storedLP.isInPreferredZipCode);
+      const stateEligible = normalizeBoolean(storedLP.isInOperatedState);
+      const msaEligible = normalizeBoolean(storedLP.isInOperatedMSA);
 
-      // Eligibility is based on the API response - if all location checks are true, then eligible
-      eligible = !!(
-        storedLP.isInPreferredZipCode &&
-        storedLP.isInOperatedMSA &&
-        storedLP.isInOperatedState
-      );
-      console.log("🔍 DEBUG: Eligibility based on API response:", {
-        isInPreferredZipCode: storedLP.isInPreferredZipCode,
-        isInOperatedMSA: storedLP.isInOperatedMSA,
-        isInOperatedState: storedLP.isInOperatedState,
+      eligible = zipEligible;
+      payload.locationProfile = {
+        isInPreferredZipCode: zipEligible,
+        isInOperatedMSA: zipEligible ? true : msaEligible,
+        isInOperatedState: zipEligible ? true : stateEligible,
+        eligibilityCheck: zipEligible ? "Passed" : "Failed",
+      };
+      console.log("🔍 DEBUG: Eligibility based on preferred zip:", {
+        rawIsInPreferredZipCode: storedLP.isInPreferredZipCode,
+        rawIsInOperatedMSA: storedLP.isInOperatedMSA,
+        rawIsInOperatedState: storedLP.isInOperatedState,
+        derived: payload.locationProfile,
         eligible,
       });
     } else {
