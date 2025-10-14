@@ -18,10 +18,38 @@ function saveUtmsFromUrl() {
       sessionStorage.setItem(key, value);
     }
   });
+
+  const gclid = params.get("gclid");
+  if (gclid) {
+    try {
+      localStorage.setItem("gclid", gclid);
+    } catch (_) {}
+    try {
+      sessionStorage.setItem("gclid", gclid);
+    } catch (_) {}
+  }
 }
 
 // Initialize UTM capture immediately
 saveUtmsFromUrl();
+
+// Ensure gclid persists across sessions by hydrating sessionStorage from localStorage when needed
+(function hydrateGclid() {
+  try {
+    const sessionValue = sessionStorage.getItem("gclid");
+    if (sessionValue && sessionValue.trim() !== "") return;
+  } catch (_) {
+    // ignore sessionStorage access issues
+  }
+  try {
+    const stored = localStorage.getItem("gclid");
+    if (stored && stored.trim() !== "") {
+      sessionStorage.setItem("gclid", stored);
+    }
+  } catch (_) {
+    // ignore localStorage access issues
+  }
+})();
 
 // Clear UTMs on page refresh to prevent stale attribution
 // BUT only if there are no UTMs in the current URL

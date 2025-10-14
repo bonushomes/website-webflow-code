@@ -55,6 +55,7 @@
     propertyResponse: "api_response_data_address_v2",
     zipEligible: "zip_eligible_v2",
     basePayload: "basePayload_v2",
+    gclid: "gclid",
   };
 
   // Session + context for Segment events
@@ -857,6 +858,22 @@
     }
   }
 
+  function getStoredGclid() {
+    try {
+      const sessionValue = sessionStorage.getItem(STORAGE_KEYS.gclid);
+      if (sessionValue && String(sessionValue).trim() !== "") {
+        return sessionValue;
+      }
+    } catch (_) {}
+    try {
+      const localValue = localStorage.getItem(STORAGE_KEYS.gclid);
+      if (localValue && String(localValue).trim() !== "") {
+        return localValue;
+      }
+    } catch (_) {}
+    return "";
+  }
+
   // Legacy sendSegmentLeadEvent function removed - using granular tracking events instead
 
   function getStoredLocationProfile() {
@@ -1113,6 +1130,8 @@
     const eventTracking = { eventId: finalEventId };
     if (fbc && String(fbc).trim() !== "") eventTracking.fbc = fbc;
     if (fbp && String(fbp).trim() !== "") eventTracking.fbp = fbp;
+    const gclid = getStoredGclid();
+    if (gclid && String(gclid).trim() !== "") eventTracking.gclid = gclid;
     const payloadWithUtm = {
       ...payload,
       utmParams,
