@@ -90,10 +90,15 @@ RELEASE_FILE="RELEASE_NOTES.md"
 TODAY="$(date +%Y-%m-%d)"
 SECTION_HEADER="## v${NEXT_VERSION} - ${TODAY}"
 
-TEMP_FILE="$(mktemp)"
+CURRENT_RELEASE_FILE="$(mktemp)"
 {
   printf "%s\n\n" "${SECTION_HEADER}"
   printf "%s" "${BULLETS}"
+} > "${CURRENT_RELEASE_FILE}"
+
+TEMP_FILE="$(mktemp)"
+{
+  cat "${CURRENT_RELEASE_FILE}"
   printf "\n"
   if [ -f "${RELEASE_FILE}" ]; then
     cat "${RELEASE_FILE}"
@@ -120,6 +125,58 @@ fi
 git push "${DEFAULT_REMOTE}"
 git push "${DEFAULT_REMOTE}" "${TAG_NAME}"
 
-echo "Release ${TAG_NAME} created and pushed to ${DEFAULT_REMOTE}."
+REMOTE_URL="$(git config --get "remote.${DEFAULT_REMOTE}.url" || true)"
+REPO_SLUG=""
+if [[ "${REMOTE_URL}" =~ ^git@github\.com:(.+?)(\.git)?$ ]]; then
+  REPO_SLUG="${BASH_REMATCH[1]}"
+elif [[ "${REMOTE_URL}" =~ ^https://github\.com/(.+?)(\.git)?$ ]]; then
+  REPO_SLUG="${BASH_REMATCH[1]}"
+fi
+
+RELEASE_TITLE="v${NEXT_VERSION}"
+RELEASE_BODY_FILE="${CURRENT_RELEASE_FILE}"
+
+publish_release_with_gh() {
+  if ! command -v gh >/dev/null 2>&1; then
+    return 1
+  fi
+  gh release create "${TAG_NAME}" --title "${RELEASE_TITLE}" --notes-file "${RELEASE_BODY_FILE}" >/dev/null 2>&1
+}
+
+publish_release_with_api() {
+  local token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+  if [ -z "${token}" ] || [ -z "${REPO_SLUG}" ]; then
+    return 1
+  fi
+
+  RELEASE_JSON_FILE="$(mktemp)"
+  TAG_NAME_OUT="${TAG_NAME}" RELEASE_TITLE_OUT="${RELEASE_TITLE}" node <<'NODE' "${RELEASE_BODY_FILE}" > "${RELEASE_JSON_FILE}"
+const fs = require('fs');
+const body = fs.readFileSync(process.argv[1], 'utf8');
+const data = {
+  tag_name: process.env.TAG_NAME_OUT,
+  name: process.env.RELEASE_TITLE_OUT,
+  body,
+  draft: false,
+  prerelease: false
+};
+process.stdout.write(JSON.stringify(data));
+NODE
+
+  curl -sS -X POST \
+    -H "Authorization: Bearer ${token}" \
+    -H "Accept: application/vnd.github+json" \
+    -H "Content-Type: application/json" \
+    "https://api.github.com/repos/${REPO_SLUG}/releases" \
+    --data "@${RELEASE_JSON_FILE}" >/dev/null 2>&1 || return 1
+}
+
+if publish_release_with_gh || publish_release_with_api; then
+  echo "Release ${TAG_NAME} created, pushed to ${DEFAULT_REMOTE}, and published on GitHub."
+else
+  echo "Release ${TAG_NAME} created and pushed to ${DEFAULT_REMOTE}."
+  echo "Warning: Unable to auto-publish the GitHub release. Please publish manually."
+fi
+
 echo "Summary:"
 printf "%s" "${BULLETS}"

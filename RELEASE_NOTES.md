@@ -1,3 +1,8 @@
+## v1.0.127 - 2025-10-13
+
+ - package.json
+ - scripts/deploy.sh
+
 ## v1.0.126 - 2025-10-13
 
  - package.json
