@@ -1,6 +1,6 @@
 {
   "name": "webflow-forms",
-  "version": "1.0.128",
+  "version": "1.0.129",
   "description": "Webflow form tracking and validation scripts",
   "scripts": {
     "lint": "eslint *.js",

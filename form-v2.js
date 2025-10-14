@@ -865,12 +865,6 @@
         return sessionValue;
       }
     } catch (_) {}
-    try {
-      const localValue = localStorage.getItem(STORAGE_KEYS.gclid);
-      if (localValue && String(localValue).trim() !== "") {
-        return localValue;
-      }
-    } catch (_) {}
     return "";
   }
 

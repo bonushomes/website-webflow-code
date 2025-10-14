@@ -1,3 +1,9 @@
+## v1.0.129 - 2025-10-14
+
+ - form-v2.js
+ - global.js
+ - package.json
+
 ## v1.0.128 - 2025-10-14
 
  - form-v2.js
