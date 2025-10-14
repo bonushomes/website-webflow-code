@@ -110,10 +110,16 @@ TAG_NAME="v${NEXT_VERSION}"
 TAG_MESSAGE="${SECTION_HEADER}"$'\n\n'"${BULLETS}"
 git tag -a "${TAG_NAME}" -m "${TAG_MESSAGE}"
 
-echo "Release ${TAG_NAME} created."
+DEFAULT_REMOTE="$(git remote | head -n 1 || echo origin)"
+
+if [ -z "${DEFAULT_REMOTE}" ]; then
+  echo "Release ${TAG_NAME} created, but no git remote configured. Please push manually."
+  exit 0
+fi
+
+git push "${DEFAULT_REMOTE}"
+git push "${DEFAULT_REMOTE}" "${TAG_NAME}"
+
+echo "Release ${TAG_NAME} created and pushed to ${DEFAULT_REMOTE}."
 echo "Summary:"
 printf "%s" "${BULLETS}"
-echo
-echo "Next steps:"
-echo "  git push origin ${TAG_NAME}"
-echo "  git push"
