@@ -1188,34 +1188,26 @@
         console.warn("Meta Pixel Lead not sent:", err);
       }
 
-      // Show success or fail
+      // Show success for all paths (eligible or not)
+      const loading = qs(SELECTORS.stepLoading);
+      if (loading) {
+        loading.style.display = "none";
+      }
+      showRoleBasedSuccess();
+      // Keep distinct events for eligibility status even though UI is the same
       if (eligible) {
-        // Hide loading and show role-based success step
-        const loading = qs(SELECTORS.stepLoading);
-        if (loading) {
-          loading.style.display = "none";
-        }
-        showRoleBasedSuccess();
-        // Thank_You_Complete - Thank you page viewed
         trackSegmentEvent("Thank_You_Complete", { eventId: finalEventId });
       } else {
-        hideLoadingTo(SELECTORS.stepFail);
-        // Out_Of_Area_Complete - Out-of-area page viewed
         trackSegmentEvent("Out_Of_Area_Complete", { eventId: finalEventId });
       }
     } catch (err) {
       console.error("Submit lead error", err);
-      // On error, still route based on eligibility to give user a result page
-      if (eligible) {
-        // Hide loading and show role-based success step
-        const loading = qs(SELECTORS.stepLoading);
-        if (loading) {
-          loading.style.display = "none";
-        }
-        showRoleBasedSuccess();
-      } else {
-        hideLoadingTo(SELECTORS.stepFail);
+      // On error, still show the success step for all paths
+      const loading = qs(SELECTORS.stepLoading);
+      if (loading) {
+        loading.style.display = "none";
       }
+      showRoleBasedSuccess();
     }
   }
 
