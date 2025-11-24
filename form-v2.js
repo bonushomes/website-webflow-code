@@ -16,8 +16,6 @@
     step2: '[data-step="2"]',
     step3: '[data-step="3"]',
     stepSuccess: '[data-step="form-success"]',
-    stepSuccessHomeowner: '[data-step="form-success"][data-role="homeowner"]',
-    stepSuccessAgent: '[data-step="form-success"][data-role="agent"]',
     stepFail: '[data-step="address-fail"]',
     stepLoading: '[data-step="loading"]',
     addressInput: '[data-input="address"]',
@@ -312,31 +310,17 @@
   }
 
   function showRoleBasedSuccess() {
-    const userType = qs(SELECTORS.agentOrHomeowner)?.value || "";
-    const isAgent = /agent/i.test(String(userType));
-
     // Hide all success steps first
     const allSuccessSteps = qsa(SELECTORS.stepSuccess);
     allSuccessSteps.forEach((step) => {
       step.style.display = "none";
     });
 
-    // Show the appropriate success step based on role
-    const targetSelector = isAgent
-      ? SELECTORS.stepSuccessAgent
-      : SELECTORS.stepSuccessHomeowner;
-    const targetStep = qs(targetSelector);
-
+    // Always show the generic success step
+    const targetStep = qs(SELECTORS.stepSuccess);
     if (targetStep) {
       targetStep.style.display = "block";
       targetStep.style.opacity = "1";
-    } else {
-      // Fallback to generic success step if role-specific one not found
-      const fallbackStep = qs(SELECTORS.stepSuccess);
-      if (fallbackStep) {
-        fallbackStep.style.display = "block";
-        fallbackStep.style.opacity = "1";
-      }
     }
   }
 

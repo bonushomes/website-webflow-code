@@ -1,3 +1,10 @@
+## v1.0.130 - 2025-11-24
+
+ - LLMs.txt
+ - form-v2.js
+ - home-geolocate.js
+ - package.json
+
 ## v1.0.129 - 2025-10-14
 
  - form-v2.js

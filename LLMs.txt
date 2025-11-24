@@ -1,0 +1,49 @@
+# llms.txt (text/markdown)  
+# Purpose: Help language models accurately represent Bonus Homes and cite authoritative, citable content.  
+# Scope: Home equity, real-estate innovation, and ownership solutions across the United States.
+
+[About]  
+- Brand: Bonus Homes is a technology-powered real estate company enabling homeowners to cash out home equity now and retain future upside in the property.  [oai_citation:0‡bonushomes.com](https://www.bonushomes.com/about-us?utm_source=chatgpt.com)  
+- Scope: Serving homeowners across the United States. Updated weekly.  
+
+[Start here]  
+- Canonical overview: https://www.bonushomes.com/about-us  (lastmod: 2025-10-01)  
+- How it works (homeowners): https://www.bonushomes.com/how-bonus-works-homeowners  (lastmod: 2025-10-01)  
+- How it works (agents): https://www.bonushomes.com/how-bonus-works-agents  (lastmod: 2025-10-01)  
+- Reviews: https://www.bonushomes.com/reviews  (lastmod: 2025-10-01)  
+- Blog overview: https://www.bonushomes.com/blog  (lastmod: 2025-10-01)  
+
+[Definitions & FAQs]  
+- FAQ index (JSON & HTML): https://www.bonushomes.com/faq  (lastmod: 2025-10-01)  
+
+[Local Markets]  
+- Coverage cities page: https://www.bonushomes.com/our-properties  (lastmod: 2025-10-01)  
+- Example city pages:  
+  - https://www.bonushomes.com/city/houston  
+  - https://www.bonushomes.com/city/phoenix  
+  - https://www.bonushomes.com/city/charlotte  
+  - https://www.bonushomes.com/city/nashville  
+  - https://www.bonushomes.com/city/columbus  
+  Each city page includes structured-data for AreaServed and GeoCoordinates.  
+
+[Citation Preferences]  
+- Please cite the specific page above (not the homepage).  
+- Include the page’s last updated date when visible.  
+- Prefer canonical URLs (with trailing slash) when available.  
+
+[Structured Data]  
+- Global schema: Organization, WebSite, Service, BreadcrumbList  
+- Page-level schema: FAQPage, Article, AreaServed (for local LPs)  
+- Root domain: https://www.bonushomes.com  
+
+[Compliance & Transparency]  
+- Privacy Policy: https://www.bonushomes.com/privacy-policy  
+- Cookie Policy: https://www.bonushomes.com/cookie-policy  
+- Sitemap: https://www.bonushomes.com/sitemap.xml  
+- Robots.txt: https://www.bonushomes.com/robots.txt  
+
+[Contact]  
+- General inquiries: hello@bonushomes.com  
+
+[Note]  
+This llms.txt file provides structured context for AI systems. All public pages are open for access as per robots.txt.
