@@ -1108,6 +1108,8 @@
     const eventTracking = { eventId: finalEventId };
     if (fbc && String(fbc).trim() !== "") eventTracking.fbc = fbc;
     if (fbp && String(fbp).trim() !== "") eventTracking.fbp = fbp;
+    const ndclid = getCookieByName("ndclid");
+    if (ndclid && String(ndclid).trim() !== "") eventTracking.ndclid = ndclid;
     const gclid = getStoredGclid();
     if (gclid && String(gclid).trim() !== "") eventTracking.gclid = gclid;
     const payloadWithUtm = {
