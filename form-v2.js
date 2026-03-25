@@ -9,7 +9,7 @@
   - NEW: Skip step 1 if address is provided via URL parameters
 */
 
-(function formV2Bootstrap() {
+(function formV2Bootstrap() 
   const SELECTORS = {
     step: "[data-step]".trim(),
     step1: '[data-step="1"]',
@@ -1533,12 +1533,12 @@
   }
 
   function wireStep3() {
-    const btn = qs(SELECTORS.submitBtn);
-    if (!btn) return;
-    btn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await submitFinal();
-    });
+  document.addEventListener("click", async (e) => {
+        if (e.target.closest(SELECTORS.submitBtn)) {
+                e.preventDefault();
+                await submitFinal();
+        }
+  });
   }
 
   function wireStep3Validation() {
