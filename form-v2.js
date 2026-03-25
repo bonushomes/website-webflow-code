@@ -9,7 +9,7 @@
   - NEW: Skip step 1 if address is provided via URL parameters
 */
 
-(function formV2Bootstrap() 
+(function formV2Bootstrap() {
   const SELECTORS = {
     step: "[data-step]".trim(),
     step1: '[data-step="1"]',
