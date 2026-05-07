@@ -1112,6 +1112,8 @@
     if (ndclid && String(ndclid).trim() !== "") eventTracking.ndclid = ndclid;
     const gclid = getStoredGclid();
     if (gclid && String(gclid).trim() !== "") eventTracking.gclid = gclid;
+    const ttclid = getCookieByName("ttclid");
+    if (ttclid && String(ttclid).trim() !== "") eventTracking.ttclid = ttclid;
     const payloadWithUtm = {
       ...payload,
       utmParams,
