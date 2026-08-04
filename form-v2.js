@@ -764,7 +764,7 @@
       // Updating function to allow consent box to be unchecked
       var proceed = true;
       const ok = !!consent.checked;
-      if (!ok) proceed = confirm('ATTENTION NEEDED\n\n Before you submit without opting in to receive SMS and email, please know we may find it difficult to contact you regarding your inquiry.\n\nSubmit without opting in here by clicking "Ok" or click "Cancel", select the "opt-in-" box and submit again');
+      if (!ok) proceed = confirm('ATTENTION NEEDED\n\nBefore you submit without opting in to receive SMS and email, please know we may find it difficult to contact you regarding your inquiry.\n\nSubmit without opting in here by clicking "Ok" or click "Cancel," select the "opt-in" box and submit again');
       if (!proceed) {
         valid = false;
       }
